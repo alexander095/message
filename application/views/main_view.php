@@ -20,7 +20,7 @@
 		<input name='id' type='hidden' value='<?php echo $myrow["id"];?>' />
 		<input class='button' type='submit' name='submit2' id='submit2' value='Редагувати' />
 	</form>
-	<form class="form_button" id='form1' align='left' name='form1' method='post' action='/delete'>
+	<form class="form_button" id='form1' align='left' name='form1' method='post' action='/delete/result'>
 		<input name='id' type='hidden' value='<?php echo $myrow["id"];?>' />
 		<input class='button' type='submit' name='submit' id='submit' value='Видалити' />
 	</form>

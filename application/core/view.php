@@ -19,8 +19,6 @@ class View
 		/**
 		*Динамічно підключаємо загальний шаблон
 		*/
-		include 'application/views/'.$template_view;
+		include 'application\\views\\'.$template_view;
 	}
 }
-
-?>

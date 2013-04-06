@@ -1,6 +1,7 @@
 @charset "utf-8";
 /* CSS Document */
 
+
 .message {border:1px solid #cccccc; width:600px;margin-top:15px;margin-bottom:15px;}
 .message_title {background-color:#F6F6F6;}
 .message_date {font-size:12px; margin-top:7px; margin-bottom:7px; color:#cccccc; text-align:right;}
@@ -22,3 +23,9 @@ a {color:#2A00AA;font-weight:bold;}
 .main {color:red;}
 
 .form_button {margin:0px;}
+
+.login_form {font-size:12px;}
+
+.registration {font-size:12px;}
+
+.reg_form {text-align:left;padding:10px;padding-left:85px;}

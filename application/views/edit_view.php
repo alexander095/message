@@ -1,7 +1,7 @@
 <?php foreach ($Data as $myrow):?>
 
 
-<form class="send_form" id="form1" name="form1" method="post" action="/edit">
+<form class="send_form" id="form1" name="form1" method="post" action="/edit/result">
 	<p>
 		<label>Назва<br />
 			<input type="text" value="<?php echo $myrow["title"]; ?>" name="Title" id="Title" />

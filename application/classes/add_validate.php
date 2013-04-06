@@ -6,7 +6,14 @@
 */ 
 class Add_Validate
 {
-	public function checkTitle()
+	/**
+	*Функція перевірки назви повідомлення
+	*
+	*@return $Title Назва повідомлення
+	*
+	*@var string $Title Назва повідомлення
+	*/
+	public static function checkTitle()
 	{
 		if(isset($_POST['Title'])){
 			$Title=$_POST['Title'];
@@ -17,7 +24,14 @@ class Add_Validate
 		return $Title;
 	}
 	
-	public function checkDescSmall()
+	/**
+	*Функція перевірки короткого тексту повідомлення
+	*
+	*@return $DescriptionSmall Короткий текст повідомлення
+	*
+	*@var string $DescriptionSmall Короткий текст повідомлення
+	*/
+	public static function checkDescSmall()
 	{
 		if(isset($_POST['DescriptionSmall'])){
 			$DescriptionSmall=$_POST['DescriptionSmall'];
@@ -28,7 +42,14 @@ class Add_Validate
 		return $DescriptionSmall;
 	}
 	
-	public function checkDescBig()
+	/**
+	*Функція перевірки повного тексту повідомлення
+	*
+	*@return $DescriptionBig Повний текст повідомлення
+	*
+	*@var string $DescriptionBig Поввний текст повідомлення
+	*/
+	public static function checkDescBig()
 	{
 		if(isset($_POST['DescriptionBig'])){
 			$DescriptionBig=$_POST['DescriptionBig'];
@@ -39,15 +60,3 @@ class Add_Validate
 		return $DescriptionBig;
 	}
 }
-
-$object=new Add_Validate;
-
-/**
-*Занесення результатів функцій у змінні
-*/
-$Title=$object->checkTitle();
-$DescriptionSmall=$object->checkDescSmall();
-$DescriptionBig=$object->checkDescBig();
-
-
-?>

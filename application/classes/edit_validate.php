@@ -6,21 +6,35 @@
 */ 
 class Edit_Validate
 {
-	public function checkId()
+	/**
+	*Функція перевірки ідентифікатора повідомлення
+	*
+	*@return $id Ідентифікатор
+	*
+	*@var int $id Ідентиіфкатор повідомлення
+	*/
+	public static function checkId()
 	{
 		if(isset($_POST['id'])){		
 				if(!preg_match("/^[0-9]{1,10}$/",$_POST['id'])){
-					echo "Неправильний формат ідентифікатора повідомлення";
+					die("Неправильний формат ідентифікатора повідомлення");
 				}else{
 					$id=$_POST['id'];
 				}
 		}else{
-			echo "Повідомлення не знайдено";
+			die("Повідомлення не знайдено");
 		}		
 		return $id;
 	}
 	
-	public function checkTitle()
+	/**
+	*Функція перевірки назви повідомлення
+	*
+	*@return $Title Назва повідомлення
+	*
+	*@var string $Title Назва повідомлення
+	*/
+	public static function checkTitle()
 	{
 		if(isset($_POST['Title'])){
 			$Title=$_POST['Title'];
@@ -31,7 +45,14 @@ class Edit_Validate
 		return $Title;
 	}
 	
-	public function checkDescSmall()
+	/**
+	*Функція перевірки короткого тексту повідомлення
+	*
+	*@return $DescriptionSmall Короткий текст повідомлення
+	*
+	*@var string $DescriptionSmall Короткий текст повідомлення
+	*/
+	public static function checkDescSmall()
 	{
 		if(isset($_POST['DescriptionSmall'])){
 			$DescriptionSmall=$_POST['DescriptionSmall'];
@@ -42,7 +63,14 @@ class Edit_Validate
 		return $DescriptionSmall;
 	}
 	
-	public function checkDescBig()
+	/**
+	*Функція перевірки повного тексту повідомлення
+	*
+	*@return $DescriptionBig Повний текст повідомлення
+	*
+	*@var string $DescriptionBig Поввний текст повідомлення
+	*/
+	public static function checkDescBig()
 	{
 		if(isset($_POST['DescriptionBig'])){
 			$DescriptionBig=$_POST['DescriptionBig'];
@@ -52,7 +80,15 @@ class Edit_Validate
 		}
 		return $DescriptionBig;
 	}
-	public function checkDate()
+	
+	/**
+	*Функція перевірки дати редагування повідомлення
+	*
+	*@return $DateChange Дата редагування повідомлення
+	*
+	*@var date $DateChange Дата редагування повідомлення
+	*/
+	public static function checkDate()
 	{
 		if (isset($_POST['DateChange'])){
 			$DateChange=date("Y-m-d H:i:s");
@@ -60,16 +96,3 @@ class Edit_Validate
 		return $DateChange;
 	}
 }
-
-$object=new Edit_Validate;
-
-/**
-*Занесення значень функцій у змінні
-*/
-$id=$object->checkId();
-$Title=$object->checkTitle();
-$DescriptionSmall=$object->checkDescSmall();
-$DescriptionBig=$object->checkDescBig();
-$DateChange=$object->checkDate();
-
-?>
