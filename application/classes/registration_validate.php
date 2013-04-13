@@ -1,5 +1,4 @@
-﻿<?php 
-
+﻿<?php
 /**
 *Клас для перевірки існування змінних
 *і чи мають вони значення
@@ -13,14 +12,18 @@ class Registration_Validate
 	*
 	*@var string $RegLogin Реєстраційний логін
 	*/
-	public static function checkRegLogin()
+	public function checkRegLogin($login)
 	{
-		if(isset($_POST['login'])){
-			$RegLogin=$_POST['login'];
+		try{
+			if(isset($login)){
+				$RegLogin=$login;
 					if(!preg_match("/^[-a-zA-Z0-9]{4,10}+$/", $RegLogin) or $RegLogin == ''){ 
-						die("<p align='center'>Неправильний формат логіна.</p>");
 						unset($RegLogin);
+						throw new Exception("<p align='center'>Неправильний формат логіна.</p>");
 					} 
+			}
+		}catch (Exception $e){
+			echo $e->getMessage();
 		}
 		return $RegLogin;
 	}
@@ -32,14 +35,18 @@ class Registration_Validate
 	*
 	*@var string $RegPass Реєстраційний пароль
 	*/
-	public static function checkRegPass()
+	public function checkRegPass($pass)
 	{
-		if(isset($_POST['pass'])){
-			$RegPass=$_POST['pass'];
+		try{
+			if(isset($pass)){
+				$RegPass=$pass;
 					if(!preg_match("/^[-a-zA-Z0-9]{4,14}+$/", $RegPass) or $RegPass == ''){ 
 						unset($RegPass);
-						die("<p align='center'>Неправильний формат пароля.</p>");
+						throw new Exception ("<p align='center'>Неправильний формат пароля.</p>");
 					} 
+			}
+		}catch (Exception $e){
+			echo $e->getMessage();
 		}
 		return $RegPass;
 	}
@@ -51,16 +58,18 @@ class Registration_Validate
 	*
 	*@var string $RegPassTwo Пароль підтвердження
 	*/
-	public static function checkRegPassTwo()
+	public function checkRegPassTwo($PassTwo)
 	{
-		if(isset($_POST['pass_two'])){
-			$RegPassTwo=$_POST['pass_two'];
-					if(!preg_match("/^[-a-zA-Z0-9]{4,14}+$/", $RegPassTwo) or $RegPassTwo == ''){ 
+		try{
+			if(isset($PassTwo)){
+				$RegPassTwo=$PassTwo;
+					if($RegPassTwo !== GetRegPass()){
 						unset($RegPassTwo);
-						die("<p align='center'>Неправильний формат підтвердження пароля.</p>");
-					}elseif($RegPassTwo !== self::checkRegPass()){
-						die("<p align='center'>Введені паролі не співпадають</p>");
+						throw new Exception("<p align='center'>Введені паролі не співпадають</p>");
 					}
+			}
+		}catch (Exception $e){
+			echo $e->getMessage();
 		}
 		return $RegPassTwo;
 	}
@@ -72,12 +81,11 @@ class Registration_Validate
 	*
 	*@var string $EncryptPass Зашифрований пароль
 	*/
-	public static function PassEncryption()
+	public function PassEncryption()
 	{
-		$Pass = self::checkRegPass();
+		$Pass = GetRegPass();
 		$SecretString = "aswjrk889";
-		$EncryptPass = md5($Pass.$SecretString);
-		
+		$EncryptPass = sha1($Pass.$SecretString);
 		return $EncryptPass;
 	}
 	
@@ -88,15 +96,21 @@ class Registration_Validate
 	*
 	*@var string $RegEmail Реєстраційний Email
 	*/
-	public static function checkRegEmail()
+	public function checkRegEmail($email)
 	{
-		if(isset($_POST['email'])){
-			$RegEmail=$_POST['email'];
-					if(!preg_match("|^[-0-9a-z_\.]+@[-0-9a-z_^\.]+\.[a-z]{2,6}$|i", $RegEmail) or $RegEmail == ''){
+		try{
+			if(isset($email)){
+				$RegEmail=$email;
+					if(!filter_var($RegEmail, FILTER_VALIDATE_EMAIL) or $RegEmail == ''){
 						unset($RegEmail);
-						die("<p align='center'>Неправильний формат Email.</p>");
+						throw new Exception("<p align='center'>Неправильний формат Email.</p>");
 					} 
+			}
+		}catch (Exception $e){
+			echo $e->getMessage();
 		}
 		return $RegEmail;
 	}
+	
+	
 }

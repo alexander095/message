@@ -1,5 +1,5 @@
 <div class="reg_form">
-	<form id="form1" name="form1" method="post" action="/registration/result">
+	<form id="form1" name="form1" method="post" action="/main/regresult">
 		<p>
 			<label>
 				<input type="text" name="login" id="login" />

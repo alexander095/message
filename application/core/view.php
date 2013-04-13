@@ -7,7 +7,7 @@ class View
 	*$template_file - загальний для всіх сторінок шаблон;
 	*$data - массив, який містить елементи контента сторінок.
 	*/
-	function generate($content_view, $template_view, $Data = null)
+	function generate($content_view, $Data = null)
 	{
 		
 		/*
@@ -19,6 +19,6 @@ class View
 		/**
 		*Динамічно підключаємо загальний шаблон
 		*/
-		include 'application\\views\\'.$template_view;
+		include 'application/views/template_view'.'.php';
 	}
 }

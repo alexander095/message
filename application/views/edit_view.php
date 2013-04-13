@@ -1,7 +1,7 @@
-<?php foreach ($Data as $myrow):?>
+<?php foreach ($Data as $myrow){?>
 
 
-<form class="send_form" id="form1" name="form1" method="post" action="/edit/result">
+<form class="send_form" id="form1" name="form1" method="post" action="/main/editresult">
 	<p>
 		<label>Назва<br />
 			<input type="text" value="<?php echo $myrow["title"]; ?>" name="Title" id="Title" />
@@ -18,7 +18,7 @@
 		</label>
 	</p>
 		<input name="id" type="hidden" value="<?php echo $myrow["id"]; ?>" />
-		<input name="DateChange" id="DateChange" type="hidden" value="<?php echo $myrow["date_change"]; ?>" />
+		<input name="DateChange" id="DateChange" type="hidden" value="<?php echo $myrow["date_change"]; }?>" />
 	<p>
 		<label>
 			<input type="submit" name="submit" id="submit" value="Зберегти зміни" />
@@ -27,4 +27,3 @@
 	<p>&nbsp;</p>
 </form>
 
-<?php endforeach ?>

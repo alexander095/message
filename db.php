@@ -2,7 +2,7 @@
 
 class Database
 {
-	public static function mysqli()
+	public function MySqli()
 	{
 		$mysqli = new mysqli('localhost','user','12345','message_db');
 		if (mysqli_connect_errno()){

@@ -11,7 +11,7 @@ class Controller {
 	}
 	
 	/** дія (action), викликається за замовчуванню*/
-	function action_index()
+	function ActionIndex()
 	{
 		/** todo	*/
 	}

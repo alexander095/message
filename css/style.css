@@ -20,7 +20,7 @@ a {color:#2A00AA;font-weight:bold;}
 
 .menu {background-color:#E4E4E4;}
 
-.main {color:red;}
+.active {color:red;}
 
 .form_button {margin:0px;}
 
@@ -29,3 +29,5 @@ a {color:#2A00AA;font-weight:bold;}
 .registration {font-size:12px;}
 
 .reg_form {text-align:left;padding:10px;padding-left:85px;}
+
+.logout_link {font-size:13px;}

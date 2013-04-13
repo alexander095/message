@@ -3,7 +3,7 @@
 class Model
 {
 	/** метод вибірки даних*/
-	public function get_data()
+	public function GetData()
 	{
 		/** todo*/
 	}
