@@ -18,7 +18,7 @@
 		</label>
 	</p>
 		<input name="id" type="hidden" value="<?php echo $myrow["id"]; ?>" />
-		<input name="DateChange" id="DateChange" type="hidden" value="<?php echo $myrow["date_change"]; }?>" />
+		<input name="DateChange" id="DateChange" type="hidden" value="<?php echo $myrow["date_change"]; ?>" />
 	<p>
 		<label>
 			<input type="submit" name="submit" id="submit" value="Зберегти зміни" />
@@ -26,4 +26,4 @@
 	</p>
 	<p>&nbsp;</p>
 </form>
-
+<?php } ?>

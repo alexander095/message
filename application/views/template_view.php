@@ -36,7 +36,7 @@
 			</tr>
 			<tr>
 				<td colspan="2" align="center">
-<?php include 'application/views/'.$content_view; ?>       
+<?php include 'application/views/'.$ContentView.'.php'; ?>
 				</td>
 			</tr>
 		</table>

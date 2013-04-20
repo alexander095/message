@@ -12,42 +12,30 @@ class Route
 		/**Контролер і дія за замовчуванням*/
 		$ControlerName = 'Main';
 		$ActionName = 'index';
-	 
+
+        $DefaultControlerName = 'Main';
+        $DefaultActionName = 'index';
+
 		$Routes = explode('/', $_SERVER['REQUEST_URI']);
 
 		/**Отримуємо імя контролера*/
-		if ( !empty($Routes[1])){	
+		if ( !empty($Routes[1])){
 			$ControlerName = $Routes[1];
 		}
-		
+
 		/** Отримуємо імя дії*/
 		if ( !empty($Routes[2])){
 			$ActionName = $Routes[2];
 		}
 
 		/**Добавляємо префікси*/
-		$ModelName = 'Model_'.$ControlerName;
 		$ControlerName = 'Controller_'.$ControlerName;
 		$ActionName = 'Action'.$ActionName;
 
 		/**
-		echo "Model: $ModelName <br>";
 		echo "Controller: $ControlerName <br>";
 		echo "Action: $ActionName <br>";
 		*/
-
-		/**Підхоплюємо файл з класом моделі (файла моделі може і не бути)*/
-		try{
-			$ModelFile = strtolower($ModelName).'.php';
-			$ModelPath = "application/models/".$ModelFile;
-			if(file_exists($ModelPath)){
-				include "application/models/".$ModelFile;
-			}else{
-				throw new Exception("Модель не знайдена!");
-			}
-		}catch (Exception $e){
-			$e->getMessage();
-		}
 
 		/** Підхоплюємо файл з класом контролера*/
 		$ControllerFile = strtolower($ControlerName).'.php';
@@ -55,29 +43,26 @@ class Route
 		if(file_exists($ControllerPath)){
 			include "application/controllers/".$ControllerFile;
 		}else{
-			/**Робимо редірект на сторінку 404*/
-			Route::ErrorPage404();
+            /**Якщо контролера немає даємо файл контролера за замовчуванням*/
+            $ControllerFile = 'Controller_'.strtolower($DefaultControlerName).'.php';
+            $ControllerPath = "application/controllers/".$ControllerFile;
+            include "application/controllers/".$ControllerFile;
 		}
-		
+
 		/** Створюємо контролер якщо існує відповідний клас*/
 		if (class_exists($ControlerName)){
 			$Controller = new $ControlerName;
 			$Action = $ActionName;
-				if(method_exists($Controller, $Action)){
-					/** Викликаємо дію контролера*/
-					$Controller->$Action();
-				}else{
-					Route::ErrorPage404();
-				}
-		}else{
-			Route::ErrorPage404();
-		}
-	
+        }
+        if (method_exists($Controller, $Action)){
+            $Controller->$Action();
+        }else{
+            /**Якщо класу заданого контролера немає даємо дефолтний клас*/
+            $DefaultControlerName = 'Controller_'.$DefaultControlerName;
+            $Controller = new $DefaultControlerName;
+            $Action = 'Action'.$DefaultActionName;
+            $Controller->$Action();
+        }
 	}
 
-	public function ErrorPage404()
-	{
-        echo "<script>document.location.replace('main/Error404');</script>";
-    }
-    
 }

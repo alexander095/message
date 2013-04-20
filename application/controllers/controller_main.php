@@ -2,35 +2,34 @@
 
 class Controller_Main extends Controller
 {
-	function __construct()
-	{
-		include_once('application/classes/message_validate'.'.php');
-		$this->Model=new Model_Main();
-		$this->View=new View();	
-	}
-	
 	/**
-	*Формування головної сторнки з потрібними даними 
+	*Формування головної сторнки з потрібними даними
 	*/
-	public function ActionIndex()
-	{	
+	public function ActionIndex($param = null)
+	{
+        require_once 'application/models/Model_Main.php';
+
+        $ObjModel = new Model_Main();
+
+        $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page'] : 1;
+
 		/**
 		*Занесення в змінну $Data масиву, що повертається методом get_data
 		*/
-		$Data=$this->Model->GetData();
+		$Data=$ObjModel->GetData($page);
 		/**
 		*В метод generate екземпляра класу View передаються 
 		*імена файлів загального шаблону і виду c контентом сторінки.
 		*/
-		$this->View->generate('main_view'.'.php',$Data);
+        $this->CreateView()->generate('main_view',$Data);
 	}
 	
 	/**
 	*Формування сторінки з формою для додавання повідомлень
 	*/
 	public function ActionAdd()
-	{	
-		$this->View->generate('add_view'.'.php');
+	{
+		$this->CreateView()->generate('add_view');
 	}
 	
 	/**
@@ -38,44 +37,32 @@ class Controller_Main extends Controller
 	*/
 	public function ActionAddResult()
 	{
-		function GetTitle()
-		{
-		$object = new Message_Validate;
-		$Title = $object->checkTitle($_POST['Title']);
-		return $Title;
-		}
-		
-		/**
-		*Відправлення даних пост у валідатор
-		*
-		*@return $DescriptionSmall Короткий текст
-		*
-		*@var string $DescriptionSmall Короткий текст
-		*/
-		function GetDescSmall()
-		{
-		$object = new Message_Validate;
-		$DescriptionSmall = $object->checkDescSmall($_POST['DescriptionSmall']);
-		return $DescriptionSmall;
-		}
-		
-		function GetDescBig()
-		{
-		$object = new Message_Validate;
-		$DescriptionBig = $object->checkDescBig($_POST['DescriptionBig']);
-		return $DescriptionBig;
-		}
-		
-		/**
-		*В метод generate екземпляра класу View передаються 
-		*імена файлів загального шаблону і виду c контентом сторінки.
-		*/
-		$this->View->generate('result_view'.'.php',$Data);
-		
-		/**
-		*Занесення в змінну $Data масиву, що повертається методом get_data
-		*/
-		$Data=$this->Model->GetDataAdd();			
+        require_once 'application/classes/MessageValidate.php';
+        require_once 'application/models/Model_Main.php';
+
+		$ObjValidate = new MessageValidate();
+        $ObjModel = new Model_Main();
+
+        if(!$ObjValidate->checkTitle($_POST['Title'])){
+            unset($_POST['Title']);
+        }
+        if(!$ObjValidate->checkDescSmall($_POST['DescriptionSmall'])){
+            unset($_POST['DescriptionSmall']);
+        }
+        if(!$ObjValidate->checkDescBig($_POST['DescriptionBig'])){
+            unset($_POST['DescriptionBig']);
+        }
+
+        /**
+         *Занесення в змінну $Data масиву, що повертається методом get_data
+         */
+        $Data=$ObjModel->GetDataAdd($_POST['Title'], $_POST['DescriptionSmall'], $_POST['DescriptionBig']);
+
+        /**
+         *В метод generate екземпляра класу View передаються
+         *імена файлів загального шаблону і виду c контентом сторінки.
+         */
+        $this->CreateView()->generate('result_view',$Data);
 	}
 	
 	/**
@@ -83,48 +70,52 @@ class Controller_Main extends Controller
 	*/
 	public function ActionDelete()
 	{
-		/**
-		*Відправлення отриманого ідентифікатора у валідатор
-		*
-		*@return $id Ідентифікатор повідомлення 
-		*
-		*@var int $id Ідентифікатор
-		*/
-		function GetId()
-		{
-		$object = new Message_Validate;
-		$id = $object->checkId($_POST['id']);
-		return $id;
-		}
-		
-		$this->View->generate('result_view'.'.php',$Data);
-		/**
-		*Занесення в змінну $Data масиву, що повертається методом get_data
-		*/
-		$Data=$this->Model->GetDataDelete();
+        require_once 'application/classes/MessageValidate.php';
+        require_once 'application/models/Model_Main.php';
+
+        $ObjValidate = new MessageValidate();
+        $ObjModel = new Model_Main();
+
+        try{
+            if(!$ObjValidate->checkId($_POST['id'])){
+                throw new Exception("Неправильний ідентифікатор повідомлення");
+            }
+        }catch (Exception $ExError){}
+
+        /**
+         *Занесення в змінну $Data масиву, що повертається методом get_data
+         */
+        $Data=$ObjModel->GetDataDelete($_POST['id']);
+
+		$this->CreateView()->generate('result_view',$Data, $ExError);
 	}
 	
 	/**
 	*Редагування конкретного повідомлення
 	*/
 	public function ActionEdit()
-	{		
-		function GetId()
-		{
-		$object = new Message_Validate;
-		$id = $object->checkId($_POST['id']);
-		return $id;
-		}
+	{
+        require_once 'application/classes/MessageValidate.php';
+        require_once 'application/models/Model_Main.php';
+
+        $ObjValidate = new MessageValidate();
+        $ObjModel = new Model_Main();
+
+        try{
+            if(!$ObjValidate->checkId($_POST['id'])){
+                throw new Exception("Неправильний ідентифікатор повідомлення");
+            }
+        }catch (Exception $ExError){}
 
 		/**
 		*Занесення в змінну $Data масиву, що повертається методом get_data
 		*/
-		$Data=$this->Model->GetDataEdit();
+		$Data=$ObjModel->GetDataEdit($_POST['id']);
 		/**
 		*В метод generate екземпляра класу View передаються 
 		*імена файлів загального шаблону і виду c контентом сторінки.
 		*/
-		$this->View->generate('edit_view'.'.php',$Data);
+		$this->CreateView()->generate('edit_view',$Data, $ExError);
 	}
 	
 	/**
@@ -132,53 +123,31 @@ class Controller_Main extends Controller
 	*/
 	public function ActionEditResult()
 	{
-		/**
-		*Відправлення отриманого ідентифікатора у валідатор
-		*
-		*@return $id Ідентифікатор повідомлення 
-		*
-		*@var int $id Ідентифікатор
-		*/
-		function GetId()
-		{
-		$object = new Message_Validate;
-		$id = $object->checkId($_POST['id']);
-		return $id;
-		}
-		
-		/**
-		*Відправлення даних пост у валідатор
-		*
-		*@return $Title Назва повідомлення
-		*
-		*@var string $Title Назва повідомлення
-		*/
-		function GetTitle()
-		{
-		$object = new Message_Validate;
-		$Title = $object->checkTitle($_POST['Title']);
-		return $Title;
-		}
-		
-		function GetDescSmall()
-		{
-		$object = new Message_Validate;
-		$DescriptionSmall = $object->checkDescSmall($_POST['DescriptionSmall']);
-		return $DescriptionSmall;
-		}
-		
-		function GetDescBig()
-		{
-		$object = new Message_Validate;
-		$DescriptionBig = $object->checkDescBig($_POST['DescriptionBig']);
-		return $DescriptionBig;
-		}
+        require_once 'application/classes/MessageValidate.php';
+        require_once 'application/models/Model_Main.php';
 
-		$this->View->generate('result_view'.'.php',$Data);
-		/**
-		*Занесення в змінну $Data масиву, що повертається методом GetEditResult
-		*/
-		$Data=$this->Model->GetEditResult();
+        $ObjValidate = new MessageValidate();
+        $ObjModel = new Model_Main();
+
+		if(!$ObjValidate->checkId($_POST['id'])){
+            unset($_POST['id']);
+        }
+		if(!$ObjValidate->checkTitle($_POST['Title'])){
+            unset($_POST['Title']);
+        }
+		if(!$ObjValidate->checkDescSmall($_POST['DescriptionSmall'])){
+            unset($_POST['DescriptionSmall']);
+        }
+		if(!$ObjValidate->checkDescBig($_POST['DescriptionBig'])){
+            unset($_POST['DescriptionBig']);
+        }
+
+        /**
+        *Занесення в змінну $Data масиву, що повертається методом GetEditResult
+        */
+        $Data=$ObjModel->GetEditResult($_POST['id'],$_POST['Title'],$_POST['DescriptionSmall'],$_POST['DescriptionBig']);
+
+		$this->CreateView()->generate('result_view',$Data);
 	}
 	
 	/**
@@ -186,23 +155,28 @@ class Controller_Main extends Controller
 	*тексту повідомлення повідомлення
 	*/
 	public function ActionFulltext()
-	{	
-		function GetId()
-		{
-		$object = new Message_Validate;
-		$id = $object->checkId($_POST['id']);
-		return $id;
-		}
+	{
+        require_once 'application/classes/MessageValidate.php';
+        require_once 'application/models/Model_Main.php';
+
+        $ObjValidate = new MessageValidate();
+        $ObjModel = new Model_Main();
+
+        try{
+            if(!$ObjValidate->checkId($_POST['id'])){
+                throw new Exception("Неправильний ідентифікатор повідомлення");
+            }
+        }catch (Exception $ExError){}
 		/**
 		*Занесення в змінну $Data масиву, що повертається
 		*методом GetDataFulltext
 		*/
-		$Data=$this->Model->GetDataFulltext();
+		$Data=$ObjModel->GetDataFulltext($_POST['id']);
 		/**
 		*В метод generate екземпляра класу View передаються 
 		*імена файлів загального шаблону і виду c контентом сторінки.
 		*/
-		$this->View->generate('fulltext_view'.'.php',$Data);
+		$this->CreateView()->generate('fulltext_view',$Data, $ExError);
 	}
 	
 	/**
@@ -210,7 +184,7 @@ class Controller_Main extends Controller
 	*/
 	public function ActionRegistration()
 	{			
-		$this->View->generate('registration_view'.'.php');
+		$this->CreateView()->generate('registration_view');
 	}
 	
 	/**
@@ -218,101 +192,76 @@ class Controller_Main extends Controller
 	*/
 	public function ActionRegResult()
 	{
-		function GetRegLogin()
-		{
-		$object = new Registration_Validate;
-		$RegLogin = $object->checkRegLogin($_POST['login']);
-		return $RegLogin;
-		}
-		
-		/**
-		*Відправлення даних пост у валідатор
-		*
-		*@return $RegPass Реєстраційний пароль
-		*
-		*@var string $RegPass Пароль 
-		*/
-		function GetRegPass()
-		{
-		$object = new Registration_Validate;
-		$RegPass = $object->checkRegPass($_POST['pass']);
-		return $RegPass;
-		}
-		
-		function GetRegPassTwo()
-		{
-		$object = new Registration_Validate;
-		$RegPassTwo = $object->checkRegPassTwo($_POST['pass_two']);
-		return $RegPassTwo;
-		}
-		
-		/**
-		*Отримання зашифрованого пароля
-		*
-		*@return $EncryptPass Зашифрований пароль
-		*
-		*@var string $EncryptPass Зашифрований пароль 
-		*/
-		function GetPassEncrypt()
-		{
-		$object = new Registration_Validate;
-		$EncryptPass = $object->PassEncryption();
-		return $EncryptPass;
-		}
-		
-		function GetRegEmail()
-		{
-		$object = new Registration_Validate;
-		$RegEmail = $object->checkRegEmail($_POST['email']);
-		return $RegEmail;
-		}
-		
-		/**
-		*Підключення класу валідатора
-		*/
-		include_once('application/classes/registration_validate'.'.php');
-		$this->View->generate('result_view'.'.php',$Data);
-		/**
-		*Занесення в змінну $Data масиву, що повертається методом GetRegData
-		*/
-		$Data=$this->Model->GetRegData();
+        require_once 'application/classes/RegistrationValidate.php';
+        require_once 'application/models/Model_Main.php';
+
+        $ObjValidate = new RegistrationValidate();
+        $ObjModel = new Model_Main();
+
+        try{
+		if(!$ObjValidate->checkRegLogin($_POST['login'])){
+            unset($_POST['login']);
+            throw new Exception("Неправильний формат логіна");
+        }
+        }catch(Exception $ExError){}
+
+        try{
+            if(!$ObjValidate->checkRegPass($_POST['pass'])){
+                unset($_POST['pass']);
+                throw new Exception("Неправильний формат пароля");
+            }
+        }catch(Exception $ExError){}
+
+        try{
+            if(!$ObjValidate->checkRegPassTwo($_POST['pass_two'],$_POST['pass'])){
+                unset($_POST['pass_two']);
+                throw new Exception("Паролі не співпадають");
+            }
+        }catch(Exception $ExError){}
+
+		$EncryptPass = $ObjValidate->PassEncryption($_POST['pass']);
+
+        try{
+            if(!$ObjValidate->checkRegEmail($_POST['email'])){
+                unset($_POST['email']);
+                throw new Exception("Неправильний формат Email");
+            }
+        }catch(Exception $ExError){}
+
+        /**
+         *Занесення в змінну $Data масиву, що повертається методом GetRegData
+         */
+        $Data=$ObjModel->GetRegData($_POST['login'], $_POST['pass'], $_POST['pass_two'], $_POST['email'], $EncryptPass);
+
+		$this->CreateView()->generate('result_view',$Data, $ExError);
 	}
 	
 	/**
 	*Обробка даних авторизації користувача 
 	*/
 	public function ActionAuthorization()
-	{		
-			/**
-			*Захист поля логіна від інєкцій
-			*
-			*return $AuthLogin Логін авторизації
-			*/
-			function checkAuthLogin()
-			{
-				if (isset($_POST['AuthLogin'])){
-					$AuthLogin = mysql_real_escape_string($_POST['AuthLogin']);
-				}
-			return $AuthLogin;
-			}
-			
-			/**
-			*Співставляння введеного пароля з секретним словом
-			*
-			*return $AuthPass Пароль авторизації
-			*/
-			function checkAuthPass()
-			{
-				if (isset($_POST['AuthPass'])){
-					$AuthPass = $_POST['AuthPass'];
-					$SecretString = "aswjrk889";
-					$AuthPass = $AuthPass.$SecretString;
-				}
-			return $AuthPass;
-			}
-			
-		$Data=$this->Model->GetAuthData();
-		$this->View->generate('result_view'.'.php',$Data);
+	{
+        require_once 'application/models/Model_Main.php';
+        $ObjModel = new Model_Main();
+
+		if (isset($_POST['AuthLogin'])){
+			$AuthLogin = mysql_real_escape_string($_POST['AuthLogin']);
+		}
+
+		if (isset($_POST['AuthPass'])){
+			$AuthPass = $_POST['AuthPass'];
+			$SecretString = "aswjrk889";
+			$AuthPass = $AuthPass.$SecretString;
+		}
+
+		$Data=$ObjModel->GetAuthData($AuthLogin, $AuthPass);
+
+        if(is_array($Data)){
+        $_SESSION['user_id'] = $Data['id'];
+        $_SESSION['user_login'] = $Data['login'];
+        }
+
+		$this->CreateView()->generate('result_view',$Data);
 		
 	}
 	
@@ -323,18 +272,13 @@ class Controller_Main extends Controller
 	*/
 	public function ActionLogOut()
 	{
+        require_once 'application/models/Model_Main.php';
+        $ObjModel = new Model_Main();
+
 		unset($_SESSION['user_id']);
 		unset($_SESSION['user_login']);
-		$Data=$this->Model->GetData();
-		$this->View->generate('main_view'.'.php',$Data);
+		$Data=$ObjModel->GetData($param = 1);
+		$this->CreateView()->generate('main_view',$Data);
 	}
-	
-	public function ActionError404()
-	{
-		/**
-		*В метод generate екземпляра класу View передаються 
-		*імена файлів загального шаблону і виду c контентом сторінки.
-		*/
-		$this->View->generate('404_view'.'.php');
-	}
+
 }

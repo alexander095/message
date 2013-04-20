@@ -18,7 +18,7 @@
 	</form>
 	<form class="form_button" id='form2' name='form2' align='left' method='post' action='/main/edit'>
 		<input name='id' type='hidden' value='<?php echo $myrow["id"];?>' />
-		<input class='button' type='submit' name='submit2' id='submit2' value='Редагувати' />
+		<input class='button' type='submit' name='submit2' id='submit3' value='Редагувати' />
 	</form>
 	<form class="form_button" id='form1' align='left' name='form1' method='post' action='/main/delete'>
 		<input name='id' type='hidden' value='<?php echo $myrow["id"];?>' />
@@ -27,3 +27,4 @@
 	<hr></hr>
 </div>
 <?php } ?>
+<?php include 'application/Pagination/pag.php'; ?>

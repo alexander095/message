@@ -2,12 +2,15 @@
 
 class View
 {
-	/**
-	*$content_file - види що відображають контент сторінки;
-	*$template_file - загальний для всіх сторінок шаблон;
-	*$data - массив, який містить елементи контента сторінок.
-	*/
-	function generate($content_view, $Data = null)
+    /**
+     * @param $ContentView
+     * @param null $Data
+     * @param null $ExError
+     * @internal param $content_file - види що відображають контент сторінки;
+     * @internal param $template_file - загальний для всіх сторінок шаблон;
+     * @internal param $data - массив, який містить елементи контента сторінок.
+     */
+	public function generate($ContentView, $Data = null, $ExError = null)
 	{
 		
 		/*
@@ -19,6 +22,6 @@ class View
 		/**
 		*Динамічно підключаємо загальний шаблон
 		*/
-		include 'application/views/template_view'.'.php';
+		include 'application/views/template_view.php';
 	}
 }

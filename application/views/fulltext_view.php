@@ -5,7 +5,7 @@
 		</td>
 	</tr>
 	<tr>
-		<td colspan='3'><p class='DescriptionBig'><?php echo $myrow["description_big"]; }?></p>
+		<td colspan='3'><p class='DescriptionBig'><?php echo $myrow["description_big"]; ?></p>
 		</td>
 	</tr>
 	<tr>
@@ -13,3 +13,4 @@
 		</td>
 	</tr>
 </table>
+<?php } ?>
