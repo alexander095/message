@@ -12,6 +12,9 @@ class Controller {
         return $View;
     }
 
+    public function generateView($template,$data = null,$MoreData = null){
+        $this->CreateView()->generate($template,$data,$MoreData);
+    }
     /**
      *
      *дія (action), викликається за замовчуванню

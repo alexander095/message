@@ -1,7 +1,7 @@
 <p>
     <?php
-        if(isset($ExError)){
-            echo $ExError->GetMessage();
+        if(isset($MoreData)){
+            echo $MoreData->GetMessage();
         }
     ?>
 </p>

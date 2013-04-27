@@ -24,7 +24,20 @@
 		<input name='id' type='hidden' value='<?php echo $myrow["id"];?>' />
 		<input class='button' type='submit' name='submit' id='submit' value='Видалити' />
 	</form>
-	<hr></hr>
+	<hr>
 </div>
-<?php } ?>
-<?php include 'application/Pagination/pag.php'; ?>
+<?php }
+
+include_once 'Pagination/Paginator.php';
+
+$array = $MoreData;
+
+$pagination = new Pagination($array);
+
+if($MoreData['total']>10) {
+    echo '<div class="pagination">';
+    $pagination->display();
+    echo '</div>';
+}
+
+?>

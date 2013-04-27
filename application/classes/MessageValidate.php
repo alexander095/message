@@ -6,20 +6,15 @@
 */ 
 class MessageValidate
 {
-	/**
-	*Функція перевірки ідентифікатора повідомлення
-	*
-	*@return $id Ідентифікатор
-	*
-	*@var int $id Ідентиіфкатор повідомлення
-	*/
+    /**
+     *Функція перевірки ідентифікатора повідомлення
+     *
+     * @return bool $id Ідентифікатор
+     * @var int $id Ідентиіфкатор повідомлення
+     */
 	public function checkId($id)
 	{
-		if(isset($id) and is_numeric($id)){
-            return true;
-        }else{
-            return false;
-        }
+		return (!empty($id) && is_numeric($id));
 	}
 
     /**
@@ -30,12 +25,7 @@ class MessageValidate
      */
 	public function checkTitle($Title)
 	{
-		if(isset($Title) and $Title!==''){
-            htmlspecialchars(stripslashes($Title));
-            return true;
-		}else{
-		    return false;
-        }
+		return (!empty($Title) && $Title!=='');
 	}
 
     /**
@@ -46,12 +36,7 @@ class MessageValidate
      */
 	public function checkDescSmall($DescriptionSmall)
 	{
-        if(isset($DescriptionSmall) and $DescriptionSmall!==''){
-            htmlspecialchars(stripslashes($DescriptionSmall));
-            return true;
-        }else{
-            return false;
-        }
+        return (!empty($DescriptionSmall) && $DescriptionSmall!=='');
 	}
 
     /**
@@ -62,11 +47,6 @@ class MessageValidate
      */
 	public function checkDescBig($DescriptionBig)
 	{
-        if(isset($DescriptionBig) and $DescriptionBig!==''){
-            htmlspecialchars(stripslashes($DescriptionBig));
-            return true;
-        }else{
-            return false;
-        }
+        return (!empty($DescriptionBig) and $DescriptionBig!=='');
 	}
 }

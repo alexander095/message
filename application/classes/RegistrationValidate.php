@@ -13,13 +13,11 @@ class RegistrationValidate
      */
 	public function checkRegLogin($login)
 	{
-		if(isset($login)){
+		if(!empty($login)){
 			$RegLogin=$login;
-				if(preg_match("/^[-a-zA-Z0-9]{4,10}+$/", $RegLogin) and $RegLogin !== ''){
-                    return true;
-                }else{
-                    return false;
-                }
+			return (preg_match("/^[-a-zA-Z0-9]{4,10}+$/", $RegLogin) && $RegLogin !== '');
+        }else{
+            return false;
         }
 	}
 
@@ -31,14 +29,12 @@ class RegistrationValidate
      */
 	public function checkRegPass($pass)
 	{
-		if(isset($pass)){
+		if(!empty($pass)){
 			$RegPass=$pass;
-				if(preg_match("/^[-a-zA-Z0-9]{4,14}+$/", $RegPass) and $RegPass !== ''){
-                    return true;
-				}else{
-                    return false;
-                }
-	    }
+			return (preg_match("/^[-a-zA-Z0-9]{4,14}+$/", $RegPass) && $RegPass !== '');
+	    }else{
+            return false;
+        }
 	}
 
     /**
@@ -51,14 +47,12 @@ class RegistrationValidate
      */
 	public function checkRegPassTwo($PassTwo, $RegPass)
 	{
-		if(isset($PassTwo)){
+		if(!empty($PassTwo)){
 			$RegPassTwo=$PassTwo;
-				if($RegPassTwo == $RegPass){
-                    return true;
-			    }else{
-                    return false;
-                }
-	    }
+			return ($RegPassTwo == $RegPass);
+	    }else{
+            return false;
+        }
 	}
 
     /**
@@ -83,14 +77,12 @@ class RegistrationValidate
      */
 	public function checkRegEmail($email)
 	{
-		if(isset($email)){
+		if(!empty($email)){
 			$RegEmail=$email;
-				if(!filter_var($RegEmail, FILTER_VALIDATE_EMAIL) or $RegEmail == ''){
-                    return false;
-				}else{
-                    return true;
-                }
-		}
+		    return (filter_var($RegEmail, FILTER_VALIDATE_EMAIL));
+		}else{
+            return false;
+        }
 	}
 	
 	

@@ -10,7 +10,7 @@ class Model
         $this->DB = $db->mysqli;
     }
 	/** метод вибірки даних*/
-	public function GetData($params)
+	public function GetData()
 	{
 		/** todo*/
 	}

@@ -1,51 +1,78 @@
 <?php
 class Model_Main extends Model
 {
+    public $PagParams;
+
+    const NOT_FULL_FIELDS = 0x00001;
+    const NOT_SUCCESSFUL = 0x00002;
+    const SUCCESS = 0x00003;
+    const EMPTY_ID = 0x00004;
+    const EXISTING_EMAIL = 0x00005;
+    const EXISTING_LOGIN = 0x00006;
+    const NOT_FOUND_LOGIN = 0x00007;
+    const WRONG_PASSWORD = 0x00008;
+
+    /**
+     *Функція визначення помилок
+     *
+     * @param $message
+     * @return mixed
+     */
+    public function ErrorMessages($message){
+        $errors = array(
+            0x00001 => "Ви ввели неповну інформацію",
+            0x00002 => "Виникла помилка",
+            0x00003 => "Операція успішно виконана",
+            0x00004 => "Повідомлення не знайдено",
+            0x00005 => "Такий Email вже існує",
+            0x00006 => "Такий логін вже існує",
+            0x00007 => "Введений логін не знайдено",
+            0x00008 => "Пароль введено невірно");
+        return $errors[$message];
+    }
+
     /**
      *Функція роботи з базою для головної сторінки
      *
+     * @param $page
      * @return array|void $records Масив вибірки з бази
      * @internal param array $records
      */
-	public function GetData($page)
-	{
-        $PerPage = 3;
+	public function GetDataMain($page){
 
         $PagesQuery = $this->DB->query("SELECT id FROM message");
-        $Pages = ceil(mysqli_num_rows($PagesQuery) / $PerPage);
-        $posts = mysqli_num_rows($PagesQuery);
+        $count = mysqli_num_rows($PagesQuery);
 
-        $start = ($page - 1) * $PerPage;
+        include_once 'Pagination/Paginator.php';
 
-        $total = (($posts - 1) / $PerPage) + 1;
-        $total =  intval($total);
+        $array = array(
+                'total' => $count,                              // загальна кількість елементів
+                'cur_page' => $page,                            // номер елемнта поточної сторінки
+                'number_page' => 3,                             // кількість сторінок для показу
+                'mask'=>'?page=',                               // маска url
+            );
 
-        if($page > $total){
-            $page = $total;
+        $pagination = new Pagination($array);
+
+        $limit =  $pagination->limit();
+
+        $this->PagParams = $array;
+
+        $records = array();
+        $result=$this->DB->query("SELECT id,title,description_small,description_big,date_add,date_change FROM message ORDER BY date_add DESC $limit");
+        while ($myrow=$result->fetch_assoc()){
+            /**
+            *Якщо повідомлення не редагувалось, присвоїти значення
+            *дати створення, як дату редагування
+            */
+            if($myrow["date_change"]=="0000-00-00 00:00:00"){
+                $myrow["date_change"]=$myrow["date_add"];
+            }
+            $records [] = $myrow;
         }
 
-		$records = array();
-		$result=$this->DB->query("SELECT id,title,description_small,description_big,date_add,date_change FROM message ORDER BY date_add DESC LIMIT $start, $PerPage");
-        while ($myrow=$result->fetch_assoc()){
-			/**
-			*Якщо повідомлення не редагувалось, присвоїти значення
-			*дати створення, як дату редагування
-			*/
-			if($myrow["date_change"]=="0000-00-00 00:00:00"){
-				$myrow["date_change"]=$myrow["date_add"];
-			}
-
-		/**
-		*Занесення результатів вибірки в масив
-		*
-		*@var array $records Результати вибірки з бази
-		*/
-		$records [] = $myrow;
-
-		}
-
-	return $records;
-	}
+        return $records;
+    }
 
     /**
      *Робота з базою для сторінки
@@ -61,19 +88,19 @@ class Model_Main extends Model
 		/**
 		*Занесення дати в змінну
 		*
-		*@var date $date Поточна дата
+		*@var $date Поточна дата
 		*/
 		$Date=date("Y-m-d H:i:s");	
 
 		if(isset($Title) && isset($DescriptionSmall) && isset($DescriptionBig) && isset($Date)){
 			$result=$this->DB->query("INSERT INTO message (title,description_small,description_big,date_add) VALUES	('$Title','$DescriptionSmall','$DescriptionBig','$Date')");
 				if($result) {
-					return "Повідомлення успішно додано";
+					return self::ErrorMessages(self::SUCCESS);
 				}else{
-					return "Виникла помилка";
+					return self::ErrorMessages(self::NOT_SUCCESSFUL);
 				}
 		}else{
-			return "Ви ввели неповну інформацію";
+			return self::ErrorMessages(self::NOT_FULL_FIELDS);
 		}
 	}
 
@@ -89,12 +116,12 @@ class Model_Main extends Model
 		if(isset($id)){ 
 			$result=$this->DB->query("DELETE FROM message WHERE id='$id' LIMIT 1");
 				if($result){
-					return "Повідомлення видалено";
+					return self::ErrorMessages(self::SUCCESS);
 				}else{
-					return "Виникла помилка";
+                    return self::ErrorMessages(self::NOT_SUCCESSFUL);
 				}
 		}else{
-			return "Не знайдено ідентифікатор повідомлення";
+            return self::ErrorMessages(self::EMPTY_ID);
 		}
 	}
 
@@ -138,12 +165,12 @@ class Model_Main extends Model
 		if (isset($Title) && isset($DescriptionSmall) && isset($DescriptionBig) && isset($DateChange)){
 			$result=$this->DB->query("UPDATE message SET title='$Title', description_small='$DescriptionSmall',description_big='$DescriptionBig',date_change='$DateChange' WHERE id='$id' LIMIT 1");
 			if($result) {
-				return "Повідомлення змінено";
+                return self::ErrorMessages(self::SUCCESS);
 			}else{
-				return "Виникла помилка";
+                return self::ErrorMessages(self::NOT_SUCCESSFUL);
 			}
 		}else{
-			return "Ви ввели неповну інформацію";
+            return self::ErrorMessages(self::NOT_FULL_FIELDS);
 		}
 	}
 
@@ -192,7 +219,7 @@ class Model_Main extends Model
 		if (mysqli_num_rows($result) == 1){
 			$myrow=$result->fetch_assoc();
 		}else{
-			return "Введений логін не знайдено";
+            return self::ErrorMessages(self::NOT_FOUND_LOGIN);
 		}
 		if(strcmp(sha1($AuthPass),$myrow['pass']) == 0){
             $SessionData = array(
@@ -201,7 +228,7 @@ class Model_Main extends Model
             );
             return $SessionData;
 		}else{
-			return "Пароль введений невірно";
+            return self::ErrorMessages(self::WRONG_PASSWORD);
 		}
 		
 	}
@@ -222,7 +249,7 @@ class Model_Main extends Model
 		/**
 		*Занесення дати в змінну
 		*
-		*@var date $date Поточна дата
+		*@var $date Поточна дата
 		*/
 		$RegDate=date("Y-m-d H:i:s");
 		
@@ -241,18 +268,18 @@ class Model_Main extends Model
 				if(isset($RegLogin) && isset($RegPass) && isset($RegEmail) && isset($RegPassTwo)){
 					$result=$this->DB->query("INSERT INTO users (login,pass,email,date) VALUES	('$RegLogin','$EncryptPass','$RegEmail','$RegDate')");
 					if($result){
-						return "Ви успішно зареєстровані";
+                        return self::ErrorMessages(self::SUCCESS);
 					}else{
-						return "Виникла помилка";
+                        return self::ErrorMessages(self::NOT_SUCCESSFUL);
 					}
 				}else{
-					return "Ви ввели неповну інформацію";
+                    return self::ErrorMessages(self::NOT_FULL_FIELDS);
 				}
 			}else{
-				return "Такий Email вже існує";
+                return self::ErrorMessages(self::EXISTING_EMAIL);
 			}
 		}else{
-			return "Такий логін вже існує";
+            return self::ErrorMessages(self::EXISTING_LOGIN);
 		}
 	}
 

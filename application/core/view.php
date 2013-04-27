@@ -5,12 +5,13 @@ class View
     /**
      * @param $ContentView
      * @param null $Data
-     * @param null $ExError
+     * @param null $MoreData
+     * @internal param null $ExError
      * @internal param $content_file - види що відображають контент сторінки;
      * @internal param $template_file - загальний для всіх сторінок шаблон;
      * @internal param $data - массив, який містить елементи контента сторінок.
      */
-	public function generate($ContentView, $Data = null, $ExError = null)
+	public function generate($ContentView, $Data = null, $MoreData = null)
 	{
 		
 		/*
