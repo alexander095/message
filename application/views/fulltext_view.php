@@ -9,8 +9,12 @@
 		</td>
 	</tr>
 	<tr>
-    	<td>
+    	<td><hr>
+            <?php foreach ($MoreData as $tag){
+                echo "<a class='tags' href='/main/tagsearch?tag=".$tag."'>".$tag."</a> ";
+            } ?>
 		</td>
 	</tr>
 </table>
-<?php } ?>
+<?php }
+?>

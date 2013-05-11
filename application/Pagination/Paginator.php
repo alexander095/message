@@ -4,7 +4,7 @@ class Pagination {
     private $total;
     private $CurPage;
     private $NumberPage;
-    private  $array = array();
+    private $array = array();
 
     public function __construct($array) {
         return $this->array = $array;
@@ -13,6 +13,7 @@ class Pagination {
     /**
      * Функція занесення в змінну кількість записів
      *
+     * @throws Exception
      * @return int $total int
      * @internal param $total Кількість записів
      */
@@ -20,7 +21,7 @@ class Pagination {
         if(!empty($this->array['total'])){
             return  $this->total = $this->array['total'];
         }else{
-            trigger_error('Error:');
+            throw new Exception('Виникла помилка');
         }
     }
 
@@ -78,43 +79,59 @@ class Pagination {
     public function start() {
         return $this->getCurPage()*$this->getNumberPage()-$this->getNumberPage();
     }
+
+    /**
+     * Формуємо посилання на першу і попередню сторінку, якщо потрібно
+     *
+     * @return string
+     */
     public function FirstPage(){
         if($this->getCurPage() != 1){
-            return '<a href='.$this->array['mask'].'1>Перша</a> | <a href='.$this->array['mask'].($this->getCurPage()-1).'>Попередня</a> | ';
+            return '<a href='.$this->array['mask'].'1>'.$this->array['first_page'].'</a> '.
+                $this->array['partition'].' <a href='.$this->array['mask'].
+                ($this->getCurPage()-1).'>'.$this->array['previous_page'].'</a> '.
+                $this->array['partition'];
         }
     }
+
+    /**
+     * Формуємо посилання на останню і наступну сторінку, якщо потрібно
+     *
+     * @return string
+     */
     public function NextPage(){
         if ($this->getCurPage() != $this->getCountPage()){
-            return ' | <a href='.$this->array['mask'].($this->getCurPage()+1).'>Наступна</a> | <a href='.$this->array['mask'].$this->getCountPage().'>Остання</a>';
+            return ' '.$this->array['partition'].' <a href='.$this->array['mask'].($this->getCurPage()+1).'>'.
+                $this->array['next_page'].'</a> '.$this->array['partition'].
+                ' <a href='.$this->array['mask'].$this->getCountPage().'>'.
+                $this->array['last_page'].'</a>';
         }
     }
-    public function PagesLeft($pages){
-        if($this->getCurPage() - $pages > 0){
-            return ' <a href='.$this->array['mask'].($this->getCurPage()-$pages).'>'.($this->getCurPage()-$pages).'</a> | ';
+
+    /**
+     * Виводимо сторінки назад
+     *
+     * @param $page
+     * @return string
+     */
+    public function PageLeft($page){
+        if($this->getCurPage() - $page > 0){
+            return ' <a href='.$this->array['mask'].($this->getCurPage()-$page).'>'.
+                ($this->getCurPage()-$page).'</a> '.$this->array['partition'].' ';
         }
     }
-    public function PagesRight($pages){
-        if($this->getCurPage()+$pages <= $this->getCountPage()){
-            return ' | <a href='.$this->array['mask'].($this->getCurPage()+$pages).'>'.($this->getCurPage()+$pages).'</a>';
+
+    /**
+     * Виводимо сторінки вперед
+     *
+     * @param $page
+     * @return string
+     */
+    public function PageRight($page){
+        if($this->getCurPage()+$page <= $this->getCountPage()){
+            return ' '.$this->array['partition'].' <a href='.$this->array['mask'].
+                ($this->getCurPage()+$page).'>'.($this->getCurPage()+$page).'</a>';
         }
-    }
-    public function PageLeft3(){
-        return $this->PagesLeft($pages = 3);
-    }
-    public function PageLeft2(){
-        return $this->PagesLeft($pages = 2);
-    }
-    public function PageLeft1(){
-        return $this->PagesLeft($pages = 1);
-    }
-    public function PageRight3(){
-        return $this->PagesRight($pages = 3);
-    }
-    public function PageRight2(){
-        return $this->PagesRight($pages = 2);
-    }
-    public function PageRight1(){
-        return $this->PagesRight($pages = 1);
     }
 
     /**
@@ -123,6 +140,8 @@ class Pagination {
      * @return void
      */
     public function display() {
-        echo self::FirstPage().self::PageLeft3().self::PageLeft2().self::PageLeft1().'<b><span>'.self::getCurPage().'</span></b>'.self::PageRight1().self::PageRight2().self::PageRight3().self::NextPage();
+        echo self::FirstPage().self::PageLeft(3).self::PageLeft(2).self::PageLeft(1).
+            '<b><span>'.self::getCurPage().'</span></b>'.
+            self::PageRight(1).self::PageRight(2).self::PageRight(3).self::NextPage();
     }
 }

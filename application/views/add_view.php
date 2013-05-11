@@ -14,8 +14,13 @@
 			<textarea name="DescriptionBig" id="DescriptionBig" cols="45" rows="5"></textarea>
 		</label>
 	</p>
+	<p>Теги<br />
+	  <label>
+	    <input type="text" name="tags" id="tags" />
+      </label>
+	</p>
 	<p>
-		<label>
+  <label>
 			<input type="submit" name="submit" id="submit" value="Відправити" />
 		</label>
 	</p>

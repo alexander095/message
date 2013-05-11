@@ -5,6 +5,54 @@ class Controller_Main extends Controller
     const MODEL_DIRECTORY = 'application/models/';
     const CLASSES_DIRECTORY = 'application/classes/';
 
+
+    public function ActionTagSearch(){
+        require_once self::MODEL_DIRECTORY.'Model_Main.php';
+        $ObjModel = new Model_Main();
+        $search = $_GET['tag'];
+        $radio = 'description_big';
+
+        $Data=$ObjModel->GetDataSearch($search,$radio);
+
+        if (!is_array($Data)){
+            $Data=$ObjModel->ErrorMessages($Data);
+            $this->generateView('result_view',$Data);
+        }else{
+            $this->generateView('main_view',$Data);
+        }
+
+
+    }
+
+    public function ActionSearch(){
+
+        if(isset($_POST['radio'])){
+            $radio = $_POST['radio'];
+        }
+        require_once self::MODEL_DIRECTORY.'Model_Main.php';
+        $ObjModel = new Model_Main();
+
+        try{
+        if (!empty($_POST['search']) && strlen($_POST['search']) > 3){
+            $search = $_POST['search'];
+        }else{
+            unset ($_POST['search']);
+            throw new Exception("Неправильний формат пошуку");
+        }
+        }catch (Exception $MoreData){}
+
+        if (isset($_POST['search'])){
+            $Data=$ObjModel->GetDataSearch($search,$radio);
+            if (!is_array($Data)){
+                $Data=$ObjModel->ErrorMessages($Data);
+                $this->generateView('result_view',$Data);
+            }else{
+                $this->generateView('main_view',$Data);
+            }
+        }else{
+            $this->generateView('result_view',$Data=null,$MoreData);
+        }
+    }
     /**
 	*Формування головної сторнки з потрібними даними
 	*/
@@ -41,9 +89,6 @@ class Controller_Main extends Controller
 	*/
 	public function ActionAddResult()
 	{
-
-        require_once 'antimat/funcAntimat.php';
-
         require_once self::CLASSES_DIRECTORY.'MessageValidate.php';
         require_once self::MODEL_DIRECTORY.'Model_Main.php';
 
@@ -60,12 +105,23 @@ class Controller_Main extends Controller
             unset($_POST['DescriptionBig']);
         }
 
+        if(!$ObjValidate->checkTags($_POST['tags'])){
+            unset($_POST['tags']);
+        }
+
         /**
          *Занесення в змінну $Data масиву, що повертається методом get_data
          */
         try{
-            if (isset($_POST['Title']) && isset($_POST['DescriptionSmall']) && isset($_POST['DescriptionBig'])){
-                $Data=$ObjModel->GetDataAdd(antimat($_POST['Title']), antimat($_POST['DescriptionSmall']), antimat($_POST['DescriptionBig']));
+            if (isset($_POST['Title'])
+                && isset($_POST['DescriptionSmall'])
+                && isset($_POST['DescriptionBig'])
+                && isset($_POST['tags'])){
+                $Data=$ObjModel->GetDataAdd($ObjModel->antimat($_POST['Title']),
+                                            $ObjModel->antimat($_POST['DescriptionSmall']),
+                                            $ObjModel->antimat($_POST['DescriptionBig']),
+                                            $ObjModel->antimat($_POST['tags']));
+                $Data = $ObjModel->ErrorMessages($Data);
             }else{
                 throw new Exception("Ви ввели неповну інформацію");
             }
@@ -96,6 +152,7 @@ class Controller_Main extends Controller
                  *Занесення в змінну $Data масиву, що повертається методом get_data
                  */
                 $Data=$ObjModel->GetDataDelete($_POST['id']);
+                $Data = $ObjModel->ErrorMessages($Data);
             }
         }catch (Exception $MoreData){}
 
@@ -136,7 +193,6 @@ class Controller_Main extends Controller
 	*/
 	public function ActionEditResult()
 	{
-        require_once 'antimat/funcAntimat.php';
 
         require_once self::CLASSES_DIRECTORY.'MessageValidate.php';
         require_once self::MODEL_DIRECTORY.'Model_Main.php';
@@ -157,12 +213,24 @@ class Controller_Main extends Controller
             unset($_POST['DescriptionBig']);
         }
 
+        if(!$ObjValidate->checkTags($_POST['tags'])){
+            unset($_POST['tags']);
+        }
+
         /**
         *Занесення в змінну $Data масиву, що повертається методом GetEditResult
         */
         try{
-            if (isset($_POST['Title']) && isset($_POST['DescriptionSmall']) && isset($_POST['DescriptionBig'])){
-                $Data=$ObjModel->GetEditResult($_POST['id'],antimat($_POST['Title']), antimat($_POST['DescriptionSmall']), antimat($_POST['DescriptionBig']));
+            if (isset($_POST['Title'])
+                && isset($_POST['DescriptionSmall'])
+                && isset($_POST['DescriptionBig'])
+                && isset($_POST['tags'])){
+                $Data=$ObjModel->GetEditResult($_POST['id'],
+                                                $ObjModel->antimat($_POST['Title']),
+                                                $ObjModel->antimat($_POST['DescriptionSmall']),
+                                                $ObjModel->antimat($_POST['DescriptionBig']),
+                                                $ObjModel->antimat($_POST['tags']));
+                $Data = $ObjModel->ErrorMessages($Data);
             }else{
                 throw new Exception("Ви ввели неповну інформацію");
             }
@@ -192,6 +260,7 @@ class Controller_Main extends Controller
                  *методом GetDataFulltext
                  */
                 $Data=$ObjModel->GetDataFulltext($_POST['id']);
+                $MoreData = $ObjModel->Tags;
             }
         }catch (Exception $MoreData){}
 		/**
@@ -254,8 +323,15 @@ class Controller_Main extends Controller
          *Занесення в змінну $Data масиву, що повертається методом GetRegData
          */
 
-            if(isset($_POST['login']) && isset($_POST['pass']) && isset($_POST['pass_two']) && isset($_POST['email'])){
-        $Data=$ObjModel->GetRegData($_POST['login'], $_POST['pass'], $_POST['pass_two'], $_POST['email'], $EncryptPass);
+         if(isset($_POST['login'])
+             && isset($_POST['pass'])
+             && isset($_POST['pass_two'])
+             && isset($_POST['email'])){
+            $Data=$ObjModel->GetRegData($_POST['login'],
+                                        $_POST['pass'],
+                                        $_POST['pass_two'],
+                                        $_POST['email'], $EncryptPass);
+            $Data = $ObjModel->ErrorMessages($Data);
         }
 
 		$this->generateView('result_view',$Data, $MoreData);
@@ -279,11 +355,14 @@ class Controller_Main extends Controller
 			$AuthPass = $AuthPass.$SecretString;
 		}
 
-		$Data=$ObjModel->GetAuthData($AuthLogin, $AuthPass);
+		$SessionData=$ObjModel->GetAuthData($AuthLogin, $AuthPass);
 
-        if(is_array($Data)){
-        $_SESSION['user_id'] = $Data['id'];
-        $_SESSION['user_login'] = $Data['login'];
+        if(is_array($SessionData)){
+            $Data = $SessionData;
+            $_SESSION['user_id'] = $Data['id'];
+            $_SESSION['user_login'] = $Data['login'];
+        }else{
+            $Data = $ObjModel->ErrorMessages($SessionData);
         }
 
 		$this->generateView('result_view',$Data);

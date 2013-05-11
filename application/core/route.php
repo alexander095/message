@@ -21,11 +21,19 @@ class Route
 		/**Отримуємо імя контролера*/
 		if ( !empty($Routes[1])){
 			$ControlerName = $Routes[1];
+            $str=strpos($ActionName, "?");
+            if ($str){
+                $ActionName=substr($ActionName, 0, $str);
+            }
 		}
 
 		/** Отримуємо імя дії*/
 		if ( !empty($Routes[2])){
 			$ActionName = $Routes[2];
+            $str=strpos($ActionName, "?");
+            if ($str){
+            $ActionName=substr($ActionName, 0, $str);
+            }
 		}
 
 		/**Добавляємо префікси*/

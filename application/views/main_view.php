@@ -28,12 +28,11 @@
 </div>
 <?php }
 
-include_once 'Pagination/Paginator.php';
+include_once 'application/Pagination/Paginator.php';
 
 $array = $MoreData;
 
 $pagination = new Pagination($array);
-
 if($MoreData['total']>10) {
     echo '<div class="pagination">';
     $pagination->display();

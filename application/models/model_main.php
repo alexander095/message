@@ -2,15 +2,28 @@
 class Model_Main extends Model
 {
     public $PagParams;
+    public $Tags;
 
-    const NOT_FULL_FIELDS = 0x00001;
-    const NOT_SUCCESSFUL = 0x00002;
+    const ERROR_NOT_FULL_FIELDS = 0x00001;
+    const ERROR_NOT_SUCCESSFUL = 0x00002;
     const SUCCESS = 0x00003;
-    const EMPTY_ID = 0x00004;
-    const EXISTING_EMAIL = 0x00005;
-    const EXISTING_LOGIN = 0x00006;
-    const NOT_FOUND_LOGIN = 0x00007;
-    const WRONG_PASSWORD = 0x00008;
+    const ERROR_EMPTY_ID = 0x00004;
+    const ERROR_EXISTING_EMAIL = 0x00005;
+    const ERROR_EXISTING_LOGIN = 0x00006;
+    const ERROR_NOT_FOUND_LOGIN = 0x00007;
+    const ERROR_WRONG_PASSWORD = 0x00008;
+    const ERROR_SEARCH_NOT_FOUND = 0x00009;
+
+    protected $ErrorMessage = array(
+        self::ERROR_NOT_FULL_FIELDS => "Ви ввели неповну інформацію",
+        self::ERROR_NOT_SUCCESSFUL => "Виникла помилка",
+        self::SUCCESS => "Операція успішно виконана",
+        self::ERROR_EMPTY_ID => "Повідомлення не знайдено",
+        self::ERROR_EXISTING_EMAIL => "Такий Email вже існує",
+        self::ERROR_EXISTING_LOGIN => "Такий логін вже існує",
+        self::ERROR_NOT_FOUND_LOGIN => "Введений логін не знайдено",
+        self::ERROR_WRONG_PASSWORD => "Пароль введено невірно",
+        self::ERROR_SEARCH_NOT_FOUND => "Нічого не знайдено");
 
     /**
      *Функція визначення помилок
@@ -19,16 +32,83 @@ class Model_Main extends Model
      * @return mixed
      */
     public function ErrorMessages($message){
-        $errors = array(
-            0x00001 => "Ви ввели неповну інформацію",
-            0x00002 => "Виникла помилка",
-            0x00003 => "Операція успішно виконана",
-            0x00004 => "Повідомлення не знайдено",
-            0x00005 => "Такий Email вже існує",
-            0x00006 => "Такий логін вже існує",
-            0x00007 => "Введений логін не знайдено",
-            0x00008 => "Пароль введено невірно");
-        return $errors[$message];
+        return $this->ErrorMessage[$message];
+    }
+
+    public function antimat($msg){
+        $result=$this->DB->query("SELECT list FROM matu");
+        $myrow=$result->fetch_assoc();
+        $ArrMat = explode("|",$myrow['list']);
+        foreach($ArrMat as $value) {
+            if($value != "") {
+                $msg = str_replace("$value","***",$msg);
+            }
+        }
+        return $msg;
+    }
+
+    /**
+     *Функція роботи пошуку
+     *
+     * @param $search Запит пошуку
+     * @param $radio
+     * @return array $records Масив вибірки з бази
+     * @internal param array $records
+     */
+    public function GetDataSearch($search,$radio){
+        $search = trim($search);
+        $search = mysql_real_escape_string($search);
+        $search = htmlspecialchars($search);
+        $records = array();
+        $result=$this->DB->query("SELECT
+                                    id,
+                                    title,
+                                    description_small,
+                                    date_add,
+                                    date_change
+                                    FROM
+                                      message
+                                    WHERE
+                                      $radio
+                                    LIKE
+                                      '%$search%'");
+
+        if(mysqli_num_rows($result) == 0){
+            return self::ERROR_SEARCH_NOT_FOUND;
+        }
+
+        while ($myrow=$result->fetch_assoc()){
+
+            if($myrow["date_change"]=="0000-00-00 00:00:00"){
+                $myrow["date_change"]=$myrow["date_add"];
+            }
+
+            $records [] = $myrow;
+        }
+        return $records;
+
+    }
+
+    /**
+     *Функція пошуку по тегах
+     *
+     * @param $id
+     * @return array $records Масив вибірки з бази
+     */
+    public function GetTags($id){
+        $result=$this->DB->query("SELECT id,tags FROM message WHERE id=$id");
+        if(mysqli_num_rows($result) == 0){
+            return self::ERROR_SEARCH_NOT_FOUND;
+        }
+        $myrow=$result->fetch_assoc();
+        $TagsArr = explode(",",$myrow['tags']);
+        $tags = array();
+        foreach($TagsArr as $value) {
+            if($value != "") {
+                $tags [] = $value;
+            }
+        }
+        return $tags;
     }
 
     /**
@@ -43,14 +123,19 @@ class Model_Main extends Model
         $PagesQuery = $this->DB->query("SELECT id FROM message");
         $count = mysqli_num_rows($PagesQuery);
 
-        include_once 'Pagination/Paginator.php';
+        include_once 'application/Pagination/Paginator.php';
 
         $array = array(
                 'total' => $count,                              // загальна кількість елементів
                 'cur_page' => $page,                            // номер елемнта поточної сторінки
-                'number_page' => 3,                             // кількість сторінок для показу
+                'number_page' => 3,                             // кількість записів для показу
                 'mask'=>'?page=',                               // маска url
-            );
+                'partition' => '|',                              //перегородка між посиланнями
+                'first_page' => 'Перша',
+                'previous_page' => 'Попередня',
+                'next_page' => 'Наступна',
+                'last_page' => 'Остання'
+        );
 
         $pagination = new Pagination($array);
 
@@ -59,7 +144,19 @@ class Model_Main extends Model
         $this->PagParams = $array;
 
         $records = array();
-        $result=$this->DB->query("SELECT id,title,description_small,description_big,date_add,date_change FROM message ORDER BY date_add DESC $limit");
+        $result=$this->DB->query("SELECT
+                                    id,
+                                    title,
+                                    description_small,
+                                    description_big,
+                                    date_add,
+                                    date_change
+                                  FROM
+                                    message
+                                  ORDER BY
+                                    date_add
+                                  DESC
+                                    $limit");
         while ($myrow=$result->fetch_assoc()){
             /**
             *Якщо повідомлення не редагувалось, присвоїти значення
@@ -83,7 +180,7 @@ class Model_Main extends Model
      * @param $DescriptionBig
      * @return string
      */
-	public function GetDataAdd($Title,$DescriptionSmall,$DescriptionBig)
+	public function GetDataAdd($Title,$DescriptionSmall,$DescriptionBig,$tags)
 	{
 		/**
 		*Занесення дати в змінну
@@ -93,14 +190,26 @@ class Model_Main extends Model
 		$Date=date("Y-m-d H:i:s");	
 
 		if(isset($Title) && isset($DescriptionSmall) && isset($DescriptionBig) && isset($Date)){
-			$result=$this->DB->query("INSERT INTO message (title,description_small,description_big,date_add) VALUES	('$Title','$DescriptionSmall','$DescriptionBig','$Date')");
+			$result=$this->DB->query("INSERT INTO
+                                      message (
+                                        title,
+                                        description_small,
+                                        description_big,
+                                        date_add,
+                                        tags)
+                                      VALUES	(
+                                        '".$Title."',
+                                        '".$DescriptionSmall."',
+                                        '".$DescriptionBig."',
+                                        '".$Date."',
+                                        '".$tags."')");
 				if($result) {
-					return self::ErrorMessages(self::SUCCESS);
+					return self::SUCCESS;
 				}else{
-					return self::ErrorMessages(self::NOT_SUCCESSFUL);
+					return self::ERROR_NOT_SUCCESSFUL;
 				}
 		}else{
-			return self::ErrorMessages(self::NOT_FULL_FIELDS);
+			return self::ERROR_NOT_FULL_FIELDS;
 		}
 	}
 
@@ -114,14 +223,14 @@ class Model_Main extends Model
 	{
 
 		if(isset($id)){ 
-			$result=$this->DB->query("DELETE FROM message WHERE id='$id' LIMIT 1");
+			$result=$this->DB->query("DELETE FROM message WHERE id=$id LIMIT 1");
 				if($result){
-					return self::ErrorMessages(self::SUCCESS);
+					return self::SUCCESS;
 				}else{
-                    return self::ErrorMessages(self::NOT_SUCCESSFUL);
+                    return self::ERROR_NOT_SUCCESSFUL;
 				}
 		}else{
-            return self::ErrorMessages(self::EMPTY_ID);
+            return self::ERROR_EMPTY_ID;
 		}
 	}
 
@@ -136,7 +245,18 @@ class Model_Main extends Model
 	{
 	
 		$records = array();
-		$result=$this->DB->query("SELECT id,title,description_small,description_big,date_change FROM message WHERE id=$id");
+		$result=$this->DB->query("SELECT
+                                    id,
+                                    title,
+                                    description_small,
+                                    description_big,
+                                    date_change,
+                                    tags
+                                  FROM
+                                    message
+                                  WHERE
+                                    id='".$id."'");
+
 		$myrow=$result->fetch_assoc();
 		/**
 		*Занесення результатів вибірки в масив
@@ -157,20 +277,33 @@ class Model_Main extends Model
      * @param $DescriptionBig
      * @return string
      */
-	public function GetEditResult($id, $Title, $DescriptionSmall, $DescriptionBig)
+	public function GetEditResult($id, $Title, $DescriptionSmall, $DescriptionBig,$tags)
 	{
 
 		$DateChange=date("Y-m-d H:i:s");
 		
-		if (isset($Title) && isset($DescriptionSmall) && isset($DescriptionBig) && isset($DateChange)){
-			$result=$this->DB->query("UPDATE message SET title='$Title', description_small='$DescriptionSmall',description_big='$DescriptionBig',date_change='$DateChange' WHERE id='$id' LIMIT 1");
+		if (isset($Title)
+            && isset($DescriptionSmall)
+            && isset($DescriptionBig)
+            && isset($DateChange)){
+			$result=$this->DB->query("UPDATE
+                                        message
+                                      SET
+                                        title='".$Title."',
+                                        description_small='".$DescriptionSmall."',
+                                        description_big='".$DescriptionBig."',
+                                        date_change='".$DateChange."',
+                                        tags='".$tags."'
+                                      WHERE
+                                        id='".$id."'
+                                      LIMIT 1");
 			if($result) {
-                return self::ErrorMessages(self::SUCCESS);
+                return self::SUCCESS;
 			}else{
-                return self::ErrorMessages(self::NOT_SUCCESSFUL);
+                return self::ERROR_NOT_SUCCESSFUL;
 			}
 		}else{
-            return self::ErrorMessages(self::NOT_FULL_FIELDS);
+            return self::ERROR_NOT_FULL_FIELDS;
 		}
 	}
 
@@ -186,8 +319,19 @@ class Model_Main extends Model
 	{
 		
 		$records = array();
-		$result=$this->DB->query("SELECT id,title,description_big,date_add,date_change FROM message WHERE id='$id'");
+		$result=$this->DB->query("SELECT
+                                    id,
+                                    title,
+                                    description_big,
+                                    date_add,
+                                    date_change
+		                            FROM
+		                              message
+		                            WHERE
+		                              id='".$id."'");
 		$myrow=$result->fetch_assoc();
+
+        $this->Tags = $this->GetTags($id);
 
 		/**
 		*Якщо повідомлення не редагувалось, присвоїти значення
@@ -215,11 +359,19 @@ class Model_Main extends Model
 	public function GetAuthData($AuthLogin, $AuthPass)
 	{
 
-		$result=$this->DB->query("SELECT id,login,pass FROM users WHERE login='$AuthLogin' LIMIT 1");
+		$result=$this->DB->query("SELECT
+                                    id,
+                                    login,
+                                    pass
+		                          FROM
+		                            users
+		                          WHERE
+		                            login='".$AuthLogin."'
+		                          LIMIT 1");
 		if (mysqli_num_rows($result) == 1){
 			$myrow=$result->fetch_assoc();
 		}else{
-            return self::ErrorMessages(self::NOT_FOUND_LOGIN);
+            return self::ERROR_NOT_FOUND_LOGIN;
 		}
 		if(strcmp(sha1($AuthPass),$myrow['pass']) == 0){
             $SessionData = array(
@@ -228,7 +380,7 @@ class Model_Main extends Model
             );
             return $SessionData;
 		}else{
-            return self::ErrorMessages(self::WRONG_PASSWORD);
+            return self::ERROR_WRONG_PASSWORD;
 		}
 		
 	}
@@ -256,8 +408,8 @@ class Model_Main extends Model
 		/**
 		*Перевірка на існування в базі введеного логіна і email
 		*/
-		$ResultLogin=$this->DB->query("SELECT login FROM users WHERE login = '$RegLogin'");
-		$ResultEmail=$this->DB->query("SELECT email FROM users WHERE email = '$RegEmail'");
+		$ResultLogin=$this->DB->query("SELECT login FROM users WHERE login = '".$RegLogin."'");
+		$ResultEmail=$this->DB->query("SELECT email FROM users WHERE email = '".$RegEmail."'");
 		/**
 		*Перевірка рядків за вмістом введеного логіна і email
 		*/
@@ -266,20 +418,30 @@ class Model_Main extends Model
 		if($RowNumLogin <= 0){
 			if($RowNumEmail <= 0){
 				if(isset($RegLogin) && isset($RegPass) && isset($RegEmail) && isset($RegPassTwo)){
-					$result=$this->DB->query("INSERT INTO users (login,pass,email,date) VALUES	('$RegLogin','$EncryptPass','$RegEmail','$RegDate')");
+					$result=$this->DB->query("INSERT INTO
+                                                users (
+                                                  login,
+                                                  pass,
+                                                  email,
+                                                  date)
+                                              VALUES	(
+                                                '".$RegLogin."',
+                                                '".$EncryptPass."',
+                                                '".$RegEmail."',
+                                                '".$RegDate."')");
 					if($result){
-                        return self::ErrorMessages(self::SUCCESS);
+                        return self::SUCCESS;
 					}else{
-                        return self::ErrorMessages(self::NOT_SUCCESSFUL);
+                        return self::ERROR_NOT_SUCCESSFUL;
 					}
 				}else{
-                    return self::ErrorMessages(self::NOT_FULL_FIELDS);
+                    return self::ERROR_NOT_FULL_FIELDS;
 				}
 			}else{
-                return self::ErrorMessages(self::EXISTING_EMAIL);
+                return self::ERROR_EXISTING_EMAIL;
 			}
 		}else{
-            return self::ErrorMessages(self::EXISTING_LOGIN);
+            return self::ERROR_EXISTING_LOGIN;
 		}
 	}
 

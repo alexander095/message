@@ -9,8 +9,24 @@
 	<body bgcolor="#DFDFDF">
 		<table width="700" height="122" align="center" class="main_table">
 			<tr>
-				<td width="350" valign="top" class="registration"><a class="" href="/main/registration">Реєстрація на сайті</a>
-				</td>
+				<td width="350" valign="top" class="registration"><p><a class="" href="/main/registration">Реєстрація на сайті</a>
+		      </p>
+		          <form id="form2" method="post" action="/main/search">
+		            <p>Пошук<br>
+		              <label >
+		                <input type="text" name="search" id="search" />
+	                  </label>
+	                  <label>
+	                    <input type="submit" name="submit" id="submit" value="Відправити" />
+                      </label>
+		            </p>
+		            <label>
+		              <input type="radio" name="radio" id="title_search" value="title" checked="checked"/>
+		              В заголовках</label>
+		            <label>
+		              <input type="radio" name="radio" id="text_search" value="description_big" />
+		              В тексті</label>
+		          </form></td>
 				<td width="350" align="right">
 					<?php if (isset($_SESSION['user_login'])) {echo "Welcome ". $_SESSION['user_login'];?>
 					<a href="/main/logout" class="logout_link">Вийти</a><?php } ?>

@@ -17,7 +17,12 @@
 			<textarea name="DescriptionBig" id="DescriptionBig" cols="45" rows="5"><?php echo $myrow["description_big"]; ?></textarea>
 		</label>
 	</p>
-		<input name="id" type="hidden" value="<?php echo $myrow["id"]; ?>" />
+	<p>Теги<br />
+	  <label>
+	    <input type="text" name="tags" id="tags" value="<?php echo $myrow["tags"]; ?>" />
+      </label>
+	</p>
+<input name="id" type="hidden" value="<?php echo $myrow["id"]; ?>" />
 		<input name="DateChange" id="DateChange" type="hidden" value="<?php echo $myrow["date_change"]; ?>" />
 	<p>
 		<label>

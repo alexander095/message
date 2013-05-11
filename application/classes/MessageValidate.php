@@ -49,4 +49,9 @@ class MessageValidate
 	{
         return (!empty($DescriptionBig) and $DescriptionBig!=='');
 	}
+
+    public function checkTags($Tags)
+    {
+        return (!empty($Tags) and $Tags!=='');
+    }
 }
