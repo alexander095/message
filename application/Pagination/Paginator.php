@@ -6,6 +6,19 @@ class Pagination {
     private $NumberPage;
     private $array = array();
 
+    /**
+    $array = array(
+    'total' => $count,                              // загальна кількість елементів
+    'cur_page' => $page,                            // номер елемнта поточної сторінки
+    'number_page' => 3,                             // кількість записів для показу
+    'mask'=>'?page=',                               // маска url
+    'partition' => '|',                              //перегородка між посиланнями
+    'first_page' => 'Перша',
+    'previous_page' => 'Попередня',
+    'next_page' => 'Наступна',
+    'last_page' => 'Остання');
+    */
+
     public function __construct($array) {
         return $this->array = $array;
     }
@@ -21,7 +34,7 @@ class Pagination {
         if(!empty($this->array['total'])){
             return  $this->total = $this->array['total'];
         }else{
-            throw new Exception('Виникла помилка');
+            throw new Exception('Немає даних для відображення');
         }
     }
 
@@ -137,11 +150,15 @@ class Pagination {
     /**
      * Виведення на сторінку
      *
-     * @return void
+     * @param bool $return
+     * @return string
      */
-    public function display() {
-        echo self::FirstPage().self::PageLeft(3).self::PageLeft(2).self::PageLeft(1).
+    public function display($return = false) {
+        $result = self::FirstPage().self::PageLeft(3).self::PageLeft(2).self::PageLeft(1).
             '<b><span>'.self::getCurPage().'</span></b>'.
             self::PageRight(1).self::PageRight(2).self::PageRight(3).self::NextPage();
+        if ($return){
+            return $result;
+        }
     }
 }

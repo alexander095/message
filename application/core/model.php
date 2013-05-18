@@ -5,7 +5,7 @@ class Model
     public $DB;
     public function __construct()
     {
-        include 'db.php';
+        include_once 'db.php';
         $db = DataBase::getDB();
         $this->DB = $db->mysqli;
     }

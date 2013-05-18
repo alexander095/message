@@ -57,6 +57,7 @@ class Model_Main extends Model
      */
     public function GetDataSearch($search,$radio){
         $search = trim($search);
+        $search = str_replace(array('/','%'),array('_/','_%'),$search);
         $search = mysql_real_escape_string($search);
         $search = htmlspecialchars($search);
         $records = array();
@@ -69,9 +70,9 @@ class Model_Main extends Model
                                     FROM
                                       message
                                     WHERE
-                                      $radio
+                                      ".$radio."
                                     LIKE
-                                      '%$search%'");
+                                      '%".$search."%'");
 
         if(mysqli_num_rows($result) == 0){
             return self::ERROR_SEARCH_NOT_FOUND;
@@ -96,7 +97,7 @@ class Model_Main extends Model
      * @return array $records Масив вибірки з бази
      */
     public function GetTags($id){
-        $result=$this->DB->query("SELECT id,tags FROM message WHERE id=$id");
+        $result=$this->DB->query("SELECT id,tags FROM message WHERE id=".$id."");
         if(mysqli_num_rows($result) == 0){
             return self::ERROR_SEARCH_NOT_FOUND;
         }
@@ -114,34 +115,17 @@ class Model_Main extends Model
     /**
      *Функція роботи з базою для головної сторінки
      *
-     * @param $page
+     * @param $limit
+     * @internal param $page
      * @return array|void $records Масив вибірки з бази
      * @internal param array $records
      */
-	public function GetDataMain($page){
+	public function GetDataMain($limit){
 
         $PagesQuery = $this->DB->query("SELECT id FROM message");
         $count = mysqli_num_rows($PagesQuery);
 
-        include_once 'application/Pagination/Paginator.php';
-
-        $array = array(
-                'total' => $count,                              // загальна кількість елементів
-                'cur_page' => $page,                            // номер елемнта поточної сторінки
-                'number_page' => 3,                             // кількість записів для показу
-                'mask'=>'?page=',                               // маска url
-                'partition' => '|',                              //перегородка між посиланнями
-                'first_page' => 'Перша',
-                'previous_page' => 'Попередня',
-                'next_page' => 'Наступна',
-                'last_page' => 'Остання'
-        );
-
-        $pagination = new Pagination($array);
-
-        $limit =  $pagination->limit();
-
-        $this->PagParams = $array;
+        $this->PagParams = $count;
 
         $records = array();
         $result=$this->DB->query("SELECT
@@ -156,7 +140,7 @@ class Model_Main extends Model
                                   ORDER BY
                                     date_add
                                   DESC
-                                    $limit");
+                                    ".$limit."");
         while ($myrow=$result->fetch_assoc()){
             /**
             *Якщо повідомлення не редагувалось, присвоїти значення
@@ -178,6 +162,7 @@ class Model_Main extends Model
      * @param $Title
      * @param $DescriptionSmall
      * @param $DescriptionBig
+     * @param $tags
      * @return string
      */
 	public function GetDataAdd($Title,$DescriptionSmall,$DescriptionBig,$tags)
@@ -275,6 +260,7 @@ class Model_Main extends Model
      * @param $Title
      * @param $DescriptionSmall
      * @param $DescriptionBig
+     * @param $tags
      * @return string
      */
 	public function GetEditResult($id, $Title, $DescriptionSmall, $DescriptionBig,$tags)

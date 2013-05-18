@@ -63,7 +63,12 @@ class Route
 			$Action = $ActionName;
         }
         if (method_exists($Controller, $Action)){
+            try{
             $Controller->$Action();
+            }catch (Exception $err){
+                $Controller = $DefaultControlerName;
+                $Controller->ActionError404;
+            }
         }else{
             /**Якщо класу заданого контролера немає даємо дефолтний клас*/
             $DefaultControlerName = 'Controller_'.$DefaultControlerName;

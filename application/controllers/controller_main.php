@@ -5,6 +5,10 @@ class Controller_Main extends Controller
     const MODEL_DIRECTORY = 'application/models/';
     const CLASSES_DIRECTORY = 'application/classes/';
 
+    public function ActionError404(){
+        $this->generateView('error');
+    }
+
 
     public function ActionTagSearch(){
         require_once self::MODEL_DIRECTORY.'Model_Main.php';
@@ -32,19 +36,17 @@ class Controller_Main extends Controller
         require_once self::MODEL_DIRECTORY.'Model_Main.php';
         $ObjModel = new Model_Main();
 
-        try{
         if (!empty($_POST['search']) && strlen($_POST['search']) > 3){
             $search = $_POST['search'];
         }else{
             unset ($_POST['search']);
-            throw new Exception("Неправильний формат пошуку");
+            $MoreData = "Ви ввели менше 4-ох символів. Доповніть свій запит";
         }
-        }catch (Exception $MoreData){}
 
         if (isset($_POST['search'])){
             $Data=$ObjModel->GetDataSearch($search,$radio);
             if (!is_array($Data)){
-                $Data=$ObjModel->ErrorMessages($Data);
+                $Data=$ObjModel->ErrorMessages($Data).' - '.$search.'';
                 $this->generateView('result_view',$Data);
             }else{
                 $this->generateView('main_view',$Data);
@@ -58,21 +60,42 @@ class Controller_Main extends Controller
 	*/
 	public function ActionIndex($param = null)
 	{
-        require_once self::MODEL_DIRECTORY.'Model_Main.php';
+        include_once 'application/classes/Calendar.php';
+        $MoreData[3] = draw_calendar(date(m),date(y));
 
+        include_once self::MODEL_DIRECTORY.'Model_Tags.php';
+        $ObjModel = new Model_Tags();
+        $MoreData[2] = $ObjModel->CreateCloud();
+
+        include_once self::MODEL_DIRECTORY.'Model_Main.php';
         $ObjModel = new Model_Main();
+
 
         $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page'] : 1;
 
-		/**
-		*Занесення в змінну $Data масиву, що повертається методом get_data
-		*/
-		$Data=$ObjModel->GetDataMain($page);
+        $array = array(
+            'total' => 11,                                  // загальна кількість елементів
+            'cur_page' => $page,                            // номер елемнта поточної сторінки
+            'number_page' => 3,                             // кількість записів для показу
+            'mask'=>'?page=',                               // маска url
+            'partition' => '|',                              //перегородка між посиланнями
+            'first_page' => 'Перша',
+            'previous_page' => 'Попередня',
+            'next_page' => 'Наступна',
+            'last_page' => 'Остання'
+        );
+        include_once 'application/Pagination/Paginator.php';
+        $pagination = new Pagination($array);
+        $limit =  $pagination->limit();
+
+        $Data=$ObjModel->GetDataMain($limit);
+        $array['total'] = $ObjModel->PagParams;
+
 		/**
 		*В метод generate екземпляра класу View передаються 
 		*імена файлів загального шаблону і виду c контентом сторінки.
 		*/
-        $MoreData = $ObjModel->PagParams;
+        $MoreData[1] = $array;
         $this->generateView('main_view',$Data,$MoreData);
 	}
 	
@@ -117,10 +140,14 @@ class Controller_Main extends Controller
                 && isset($_POST['DescriptionSmall'])
                 && isset($_POST['DescriptionBig'])
                 && isset($_POST['tags'])){
-                $Data=$ObjModel->GetDataAdd($ObjModel->antimat($_POST['Title']),
-                                            $ObjModel->antimat($_POST['DescriptionSmall']),
-                                            $ObjModel->antimat($_POST['DescriptionBig']),
-                                            $ObjModel->antimat($_POST['tags']));
+
+                require_once self::MODEL_DIRECTORY.'Model_MatFilter.php';
+                $ObjMat = new Model_MatFilter();
+
+                $Data=$ObjModel->GetDataAdd($ObjMat->filter($_POST['Title']),
+                                            $ObjMat->filter($_POST['DescriptionSmall']),
+                                            $ObjMat->filter($_POST['DescriptionBig']),
+                                            $ObjMat->filter($_POST['tags']));
                 $Data = $ObjModel->ErrorMessages($Data);
             }else{
                 throw new Exception("Ви ввели неповну інформацію");

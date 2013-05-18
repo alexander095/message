@@ -1,7 +1,9 @@
 <p>
     <?php
-        if(isset($MoreData)){
+        if(isset($MoreData) && method_exists($MoreData,GetMessage)){
             echo $MoreData->GetMessage();
+        }else{
+            echo $MoreData;
         }
     ?>
 </p>

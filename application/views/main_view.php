@@ -1,4 +1,9 @@
-<?php foreach ($Data as $myrow){ ?>
+<?php
+foreach ($MoreData[2] as $value){
+echo $value;
+}
+echo $MoreData[3];
+ foreach ($Data as $myrow){ ?>
 <div>
 	<p class='title' align='left'>
 	<?php echo $myrow["title"]?>
@@ -30,12 +35,12 @@
 
 include_once 'application/Pagination/Paginator.php';
 
-$array = $MoreData;
+$array = $MoreData[1];
 
 $pagination = new Pagination($array);
-if($MoreData['total']>10) {
+if($MoreData[1]['total']>10) {
     echo '<div class="pagination">';
-    $pagination->display();
+    echo $pagination->display(true);
     echo '</div>';
 }
 
