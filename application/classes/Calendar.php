@@ -1,6 +1,6 @@
 <?php
 
-function draw_calendar($month,$year){
+function DrawCalendar($month,$year){
 
     /* будуємо таблицю */
     $calendar = '<table cellpadding="0" cellspacing="0" class="calendar">';
@@ -11,49 +11,47 @@ function draw_calendar($month,$year){
     implode('&nbsp</td><td class="calendar-day-head">',$headings).'</td></tr>';
 
     /* змінні місяців і днів */
-    $running_day = date('w',mktime(0,0,0,$month,0,$year));
-    $days_in_month = date('t',mktime(0,0,0,$month,1,$year));
-    $days_in_this_week = 1;
-    $day_counter = 0;
-    $dates_array = array();
+    $RunningDay = date('w',mktime(0,0,0,$month,0,$year));
+    $DaysInMonth = date('t',mktime(0,0,0,$month,1,$year));
+    $DaysInThisWeek = 1;
+    $DayCounter = 0;
+    $DatesArray = array();
 
     /* рядок для одного тижня */
     $calendar.= '<tr class="calendar-row">';
 
     /* не друкувати порожні дні до початку тижня */
-    for($x = 0; $x < $running_day; $x++){
+    for($x = 0; $x < $RunningDay; $x++){
         $calendar.= '<td class="calendar-day-np"></td>';
-        $days_in_this_week++;
+        $DaysInThisWeek++;
     }
 
     /* побудова по днях */
-    for($list_day = 1; $list_day <= $days_in_month; $list_day++){
+    for($ListDay = 1; $ListDay <= $DaysInMonth; $ListDay++){
         $calendar.= '<td class="calendar-day">';
-        $calendar.= '<a class="day-number" href="main/datesearch">'.$list_day.'</a>';
-        /** QUERY THE DATABASE FOR AN ENTRY FOR THIS DAY !!  IF MATCHES FOUND, PRINT THEM !! **/
+        $calendar.= '<a class="day-number" href="main/datesearch">'.$ListDay.'</a>';
         $calendar.= str_repeat('<p> </p>',2);
         $calendar.= '</td>';
-        if($running_day == 6){
+        if($RunningDay == 6){
             $calendar.= '</tr>';
-            if(($day_counter+1) != $days_in_month){
+            if(($DayCounter+1) != $DaysInMonth){
                 $calendar.= '<tr class="calendar-row">';
             }
-            $running_day = -1;
-            $days_in_this_week = 0;
+            $RunningDay = -1;
+            $DaysInThisWeek = 0;
         }
-        $days_in_this_week++; $running_day++; $day_counter++;
+        $DaysInThisWeek++; $RunningDay++; $DayCounter++;
     }
-    /* finish the rest of the days in the week */
-    if($days_in_this_week < 8){
-        for($x = 1; $x <= (8 - $days_in_this_week); $x++){
+    /* останні дні тижня */
+    if($DaysInThisWeek < 8){
+        for($x = 1; $x <= (8 - $DaysInThisWeek); $x++){
             $calendar.= '<td class="calendar-day-np"> </td>';
         }
     }
-    /* final row */
+    /* останній рядок */
     $calendar.= '</tr>';
-    /* end the table */
+    /* кінець таблиці */
     $calendar.= '</table>';
 
-    /* all done, return result */
     return $calendar;
 }

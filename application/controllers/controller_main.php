@@ -61,7 +61,7 @@ class Controller_Main extends Controller
 	public function ActionIndex($param = null)
 	{
         include_once 'application/classes/Calendar.php';
-        $MoreData[3] = draw_calendar(date(m),date(y));
+        $MoreData[3] = DrawCalendar(date(m),date(y));
 
         include_once self::MODEL_DIRECTORY.'Model_Tags.php';
         $ObjModel = new Model_Tags();
