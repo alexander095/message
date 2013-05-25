@@ -14,7 +14,7 @@ class MessageValidate
      */
 	public function checkId($id)
 	{
-		return (!empty($id) && is_numeric($id));
+		return (!empty($id) && is_numeric($id) && $id != '');
 	}
 
     /**

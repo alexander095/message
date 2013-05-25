@@ -1,3 +1,4 @@
+
 <form  class="send_form" id="form1" name="form1" method="post" action="/main/addresult">
 	<p>
 		<label>Назва<br />

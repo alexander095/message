@@ -35,6 +35,83 @@ class Model_Main extends Model
         return $this->ErrorMessage[$message];
     }
 
+    public function DateSearch($search,$limit){
+        $records = array();
+        $result=$this->DB->query("SELECT
+                                    id,
+                                    title,
+                                    description_small,
+                                    date_add,
+                                    date_change
+                                    FROM
+                                      message
+                                    WHERE
+                                      YEAR (date_add) = '".$search['year']."' AND
+                                      MONTH (date_add) = '".$search['month']."' AND
+                                      DAY (date_add) = '".$search['day']."' ".$limit."");
+
+        if(mysqli_num_rows($result) == 0){
+            return self::ERROR_SEARCH_NOT_FOUND;
+        }else{
+            $query=$this->DB->query("SELECT
+                                    id
+                                    FROM
+                                      message
+                                    WHERE
+                                      YEAR (date_add) = '".$search['year']."' AND
+                                      MONTH (date_add) = '".$search['month']."' AND
+                                      DAY (date_add) = '".$search['day']."' ");
+            $count = mysqli_num_rows($query);
+            $this->PagParams = $count;
+        }
+
+        while ($myrow=$result->fetch_assoc()){
+
+            if($myrow["date_change"]=="0000-00-00 00:00:00"){
+                $myrow["date_change"]=$myrow["date_add"];
+            }
+
+            $records [] = $myrow;
+        }
+        return $records;
+
+    }
+
+
+    public function TagsSearch($search,$limit){
+        $records = array();
+        $TagResult = $this->DB->query("SELECT
+                                        messages_tags.message_id,
+                                        message.id,
+                                        message.title,
+                                        message.description_small,
+                                        message.description_big,
+                                        message.date_add,
+                                        message.date_change
+                                        FROM
+                                        tags,messages_tags,message
+                                        WHERE
+                                        tags.id=messages_tags.tags_id
+                                        AND
+                                        tags.tag='".$search."'
+                                        AND
+                                        messages_tags.message_id=message.id ".$limit."");
+        $count = mysqli_num_rows($TagResult);
+        $this->PagParams = $count;
+        while ($myrow = $TagResult->fetch_assoc()){
+        if($myrow["date_change"]=="0000-00-00 00:00:00"){
+            $myrow["date_change"]=$myrow["date_add"];
+        }
+
+        $records [] = $myrow;
+        }
+        return $records;
+
+
+    }
+
+
+
     public function antimat($msg){
         $result=$this->DB->query("SELECT list FROM matu");
         $myrow=$result->fetch_assoc();
@@ -52,15 +129,30 @@ class Model_Main extends Model
      *
      * @param $search Запит пошуку
      * @param $radio
+     * @param $limit
      * @return array $records Масив вибірки з бази
      * @internal param array $records
      */
-    public function GetDataSearch($search,$radio){
+    public function GetDataSearch($search,$radio,$limit){
         $search = trim($search);
         $search = str_replace(array('/','%'),array('_/','_%'),$search);
         $search = mysql_real_escape_string($search);
         $search = htmlspecialchars($search);
         $records = array();
+
+        $PagesQuery = $this->DB->query("SELECT
+                                            id
+                                        FROM
+                                            message
+                                        WHERE
+                                            ".$radio."
+                                        LIKE
+                                            '%".$search."%'");
+        $count = mysqli_num_rows($PagesQuery);
+
+        $this->PagParams = $count;
+
+
         $result=$this->DB->query("SELECT
                                     id,
                                     title,
@@ -72,7 +164,7 @@ class Model_Main extends Model
                                     WHERE
                                       ".$radio."
                                     LIKE
-                                      '%".$search."%'");
+                                      '%".$search."%' ".$limit."");
 
         if(mysqli_num_rows($result) == 0){
             return self::ERROR_SEARCH_NOT_FOUND;
@@ -121,7 +213,6 @@ class Model_Main extends Model
      * @internal param array $records
      */
 	public function GetDataMain($limit){
-
         $PagesQuery = $this->DB->query("SELECT id FROM message");
         $count = mysqli_num_rows($PagesQuery);
 
@@ -134,7 +225,8 @@ class Model_Main extends Model
                                     description_small,
                                     description_big,
                                     date_add,
-                                    date_change
+                                    date_change,
+                                    author
                                   FROM
                                     message
                                   ORDER BY
@@ -163,9 +255,10 @@ class Model_Main extends Model
      * @param $DescriptionSmall
      * @param $DescriptionBig
      * @param $tags
+     * @param $author
      * @return string
      */
-	public function GetDataAdd($Title,$DescriptionSmall,$DescriptionBig,$tags)
+	public function GetDataAdd($Title,$DescriptionSmall,$DescriptionBig,$tags,$author)
 	{
 		/**
 		*Занесення дати в змінну
@@ -181,13 +274,15 @@ class Model_Main extends Model
                                         description_small,
                                         description_big,
                                         date_add,
-                                        tags)
+                                        tags,
+                                        author)
                                       VALUES	(
                                         '".$Title."',
                                         '".$DescriptionSmall."',
                                         '".$DescriptionBig."',
                                         '".$Date."',
-                                        '".$tags."')");
+                                        '".$tags."',
+                                        '".$author."')");
 				if($result) {
 					return self::SUCCESS;
 				}else{
@@ -310,13 +405,16 @@ class Model_Main extends Model
                                     title,
                                     description_big,
                                     date_add,
-                                    date_change
+                                    date_change,
+                                    author
 		                            FROM
 		                              message
 		                            WHERE
 		                              id='".$id."'");
 		$myrow=$result->fetch_assoc();
-
+        if(mysqli_num_rows($result) == 0){
+            return self::ERROR_EMPTY_ID;
+        }
         $this->Tags = $this->GetTags($id);
 
 		/**

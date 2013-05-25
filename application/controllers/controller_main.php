@@ -5,18 +5,103 @@ class Controller_Main extends Controller
     const MODEL_DIRECTORY = 'application/models/';
     const CLASSES_DIRECTORY = 'application/classes/';
 
+
+    /**
+     *Сторінка помилки
+     */
     public function ActionError404(){
         $this->generateView('error');
     }
 
 
+    /**
+     *Формування сторінки по виведенню повідомлень за датою
+     */
+    public function ActionDateSearch(){
+        require_once self::MODEL_DIRECTORY.'Model_Main.php';
+        $ObjModel = new Model_Main();
+        $date['day'] = $_GET['day'];
+        $date['month'] = $_GET['month'];
+        $date['year'] = $_GET['year'];
+
+        $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page'] : 1;
+
+        $array = array(
+            'total' => 11,                                  // загальна кількість елементів
+            'cur_page' => $page,                            // номер елемнта поточної сторінки
+            'number_page' => 3,                             // кількість записів для показу
+            'mask'=>'datesearch?day='.$date['day'].'&month='.$date['month'].'&year='.$date['year'].'&page=',                           // маска url
+            'partition' => '|',                              //перегородка між посиланнями
+            'first_page' => 'Перша',
+            'previous_page' => 'Попередня',
+            'next_page' => 'Наступна',
+            'last_page' => 'Остання'
+        );
+
+        include_once 'application/Pagination/Paginator.php';
+        $pagination = new Pagination($array);
+        $limit =  $pagination->limit();
+
+        echo $ObjModel->PagParams;
+        $Data=$ObjModel->DateSearch($date,$limit);
+        $array['total'] = $ObjModel->PagParams;
+        $MoreData[1] = $array;
+        if (!is_array($Data)){
+            $Data=$ObjModel->ErrorMessages($Data);
+            $this->generateView('result_view',$Data);
+        }else{
+            $this->generateView('main_view',$Data,$MoreData);
+        }
+    }
+
+
+    public function ActionTagsSearch(){
+        require_once self::MODEL_DIRECTORY.'Model_Main.php';
+        $ObjModel = new Model_Main();
+        $search = $_GET['tag'];
+
+        $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page'] : 1;
+
+        $array = array(
+            'total' => 11,                                  // загальна кількість елементів
+            'cur_page' => $page,                            // номер елемнта поточної сторінки
+            'number_page' => 3,                             // кількість записів для показу
+            'mask'=>'tagssearch?tag='.$search.'&page=',                           // маска url
+            'partition' => '|',                              //перегородка між посиланнями
+            'first_page' => 'Перша',
+            'previous_page' => 'Попередня',
+            'next_page' => 'Наступна',
+            'last_page' => 'Остання'
+        );
+
+        include_once 'application/Pagination/Paginator.php';
+        $pagination = new Pagination($array);
+        $limit =  $pagination->limit();
+
+        $Data=$ObjModel->TagsSearch($search,$limit);
+
+        if (!is_array($Data)){
+            $Data=$ObjModel->ErrorMessages($Data);
+            $this->generateView('result_view',$Data);
+        }else{
+            $array['total'] = $ObjModel->PagParams;
+            $MoreData[1] = $array;
+            $this->generateView('main_view',$Data,$MoreData);
+        }
+
+
+    }
+
+    /**
+     *Формування сторінки пошуку по тегах
+     */
     public function ActionTagSearch(){
         require_once self::MODEL_DIRECTORY.'Model_Main.php';
         $ObjModel = new Model_Main();
         $search = $_GET['tag'];
         $radio = 'description_big';
 
-        $Data=$ObjModel->GetDataSearch($search,$radio);
+        $Data=$ObjModel->GetDataSearch($search,$radio,null);
 
         if (!is_array($Data)){
             $Data=$ObjModel->ErrorMessages($Data);
@@ -28,40 +113,72 @@ class Controller_Main extends Controller
 
     }
 
+    /**
+     *Формування сторінки пошуку з потрібними даними
+     */
     public function ActionSearch(){
 
-        if(isset($_POST['radio'])){
-            $radio = $_POST['radio'];
-        }
         require_once self::MODEL_DIRECTORY.'Model_Main.php';
         $ObjModel = new Model_Main();
 
-        if (!empty($_POST['search']) && strlen($_POST['search']) > 3){
-            $search = $_POST['search'];
-        }else{
-            unset ($_POST['search']);
-            $MoreData = "Ви ввели менше 4-ох символів. Доповніть свій запит";
+        if(isset($_GET['radio'])){
+            $radio = $_GET['radio'];
         }
 
-        if (isset($_POST['search'])){
-            $Data=$ObjModel->GetDataSearch($search,$radio);
+        if (!empty($_GET['search']) && strlen($_GET['search']) > 3){
+            $search = $_GET['search'];
+        }else{
+            unset ($_GET['search']);
+            $MoreData = "Ви ввели менше 4-ох символів. Доповніть свій запит";
+            }
+
+        $page = (isset($_GET['page']) && is_numeric($_GET['page'])) ? (int)$_GET['page'] : 1;
+
+        $array = array(
+            'total' => 11,                                  // загальна кількість елементів
+            'cur_page' => $page,                            // номер елемнта поточної сторінки
+            'number_page' => 3,                             // кількість записів для показу
+            'mask'=>'search?search='.$search.'&radio='.$radio.'&page=',                               // маска url
+            'partition' => '|',                              //перегородка між посиланнями
+            'first_page' => 'Перша',
+            'previous_page' => 'Попередня',
+            'next_page' => 'Наступна',
+            'last_page' => 'Остання'
+        );
+        include_once 'application/Pagination/Paginator.php';
+        $pagination = new Pagination($array);
+        $limit =  $pagination->limit();
+        if (isset($_GET['search'])){
+            $Data=$ObjModel->GetDataSearch($search,$radio,$limit);
+            $array['total'] = $ObjModel->PagParams;
+            $MoreData[1] = $array;
             if (!is_array($Data)){
                 $Data=$ObjModel->ErrorMessages($Data).' - '.$search.'';
                 $this->generateView('result_view',$Data);
             }else{
-                $this->generateView('main_view',$Data);
+                $this->generateView('main_view',$Data,$MoreData);
             }
         }else{
             $this->generateView('result_view',$Data=null,$MoreData);
         }
     }
     /**
-	*Формування головної сторнки з потрібними даними
+	*Формування головної сторінки з потрібними даними
 	*/
 	public function ActionIndex($param = null)
 	{
+
         include_once 'application/classes/Calendar.php';
-        $MoreData[3] = DrawCalendar(date(m),date(y));
+        $ObjCalendar = new Calendar();
+        if (isset($_GET['month']) && isset($_GET['year']) && is_numeric($_GET['month'])
+            && is_numeric($_GET['year'])){
+            $MoreData[3] = $ObjCalendar->DrawCalendar($_GET['month'],$_GET['year']);
+            $MoreData [4] = $ObjCalendar->CalendarControls($_GET['month'],$_GET['year']);
+
+        }else{
+        $MoreData[3] = $ObjCalendar->DrawCalendar(date(m),date(Y));
+            $MoreData [4] = $ObjCalendar->CalendarControls(date(m),date(Y));
+        }
 
         include_once self::MODEL_DIRECTORY.'Model_Tags.php';
         $ObjModel = new Model_Tags();
@@ -91,6 +208,7 @@ class Controller_Main extends Controller
         $Data=$ObjModel->GetDataMain($limit);
         $array['total'] = $ObjModel->PagParams;
 
+
 		/**
 		*В метод generate екземпляра класу View передаються 
 		*імена файлів загального шаблону і виду c контентом сторінки.
@@ -104,7 +222,13 @@ class Controller_Main extends Controller
 	*/
 	public function ActionAdd()
 	{
-		$this->generateView('add_view');
+        if (isset($_SESSION['user_login'])){
+            $this->generateView('add_view');
+        }else{
+            $Data = "Увійдіть на сайт щоб додавати повідомлення";
+            $this->generateView('result_view',$Data);
+        }
+
 	}
 	
 	/**
@@ -139,7 +263,8 @@ class Controller_Main extends Controller
             if (isset($_POST['Title'])
                 && isset($_POST['DescriptionSmall'])
                 && isset($_POST['DescriptionBig'])
-                && isset($_POST['tags'])){
+                && isset($_POST['tags'])
+                && isset ($_SESSION['user_login'])){
 
                 require_once self::MODEL_DIRECTORY.'Model_MatFilter.php';
                 $ObjMat = new Model_MatFilter();
@@ -147,7 +272,8 @@ class Controller_Main extends Controller
                 $Data=$ObjModel->GetDataAdd($ObjMat->filter($_POST['Title']),
                                             $ObjMat->filter($_POST['DescriptionSmall']),
                                             $ObjMat->filter($_POST['DescriptionBig']),
-                                            $ObjMat->filter($_POST['tags']));
+                                            $ObjMat->filter($_POST['tags']),
+                                            $_SESSION['user_login']);
                 $Data = $ObjModel->ErrorMessages($Data);
             }else{
                 throw new Exception("Ви ввели неповну інформацію");
@@ -205,14 +331,11 @@ class Controller_Main extends Controller
                  *Занесення в змінну $Data масиву, що повертається методом get_data
                  */
                 $Data=$ObjModel->GetDataEdit($_POST['id']);
+                $this->generateView('edit_view',$Data);
             }
-        }catch (Exception $MoreData){}
-
-		/**
-		*В метод generate екземпляра класу View передаються 
-		*імена файлів загального шаблону і виду c контентом сторінки.
-		*/
-		$this->generateView('edit_view',$Data, $MoreData);
+        }catch (Exception $MoreData){
+            $this->generateView('result_view',$Data, $MoreData);
+        }
 	}
 	
 	/**
@@ -279,14 +402,20 @@ class Controller_Main extends Controller
         $ObjModel = new Model_Main();
 
         try{
-            if(!$ObjValidate->checkId($_POST['id'])){
+            if(!$ObjValidate->checkId($_GET['id'])){
                 throw new Exception("Неправильний ідентифікатор повідомлення");
             }else{
                 /**
                  *Занесення в змінну $Data масиву, що повертається
                  *методом GetDataFulltext
                  */
-                $Data=$ObjModel->GetDataFulltext($_POST['id']);
+
+                $Data=$ObjModel->GetDataFulltext($_GET['id']);
+                if (!is_array($Data)){
+                 $Data = $ObjModel->ErrorMessages($Data);
+                }else{
+                    $Data=$ObjModel->GetDataFulltext($_GET['id']);
+                }
                 $MoreData = $ObjModel->Tags;
             }
         }catch (Exception $MoreData){}
@@ -408,7 +537,7 @@ class Controller_Main extends Controller
 
 		unset($_SESSION['user_id']);
 		unset($_SESSION['user_login']);
-		$Data=$ObjModel->GetDataMain($param = 1);
+		$Data=$ObjModel->GetDataMain(null);
 		$this->generateView('main_view',$Data);
 	}
 

@@ -11,7 +11,7 @@
 			<tr>
 				<td width="350" valign="top" class="registration"><p><a class="" href="/main/registration">Реєстрація на сайті</a>
 		      </p>
-		          <form id="form2" method="post" action="/main/search">
+		          <form id="form2" method="get" action="/main/search">
 		            <p>Пошук<br>
 		              <label >
 		                <input type="text" name="search" id="search" />

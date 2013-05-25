@@ -40,9 +40,12 @@ class Model_Tags extends Model{
                 $fontSize = round(($maxSize - $minSize) / 2 + $minSize);
             }
             else{
-                $fontSize = round((($item['posts_count'] - $min)/($max - $min)) * ($maxSize - $minSize) + $minSize);
+                $fontSize = round((($item['posts_count'] - $min)/($max - $min)) *
+                    ($maxSize - $minSize) + $minSize);
             }
-            $records[] = "<span style='font-size:".$fontSize."%'>".$item['tag']." (".$item['posts_count'].") </span>";
+            $records[] = "<a class='tags' href='/main/tagssearch?tag=".$item['tag'].
+                "'style='font-size:".$fontSize."%'>".
+                $item['tag']." (".$item['posts_count'].")</a>&nbsp";
         }
         return $records;
     }
